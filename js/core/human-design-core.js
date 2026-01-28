@@ -65,6 +65,12 @@ const PROFILES = {
 const HumanDesign = {
     // Helper: Convert Longitude to Gate/Line
     // Gate 41 starts at 302.25 degrees
+    /**
+     * Converts a celestial longitude into a Human Design Gate and Line.
+     * Gate 41 starts at 302.25° (start of Aquarius).
+     * @param {number} longitude - The geocentric longitude in degrees.
+     * @returns {Object} Gate info { gate, line }.
+     */
     getGateInfo: function (longitude) {
         // Offset so 0 = Start of Gate 41
         let offsetDeg = (longitude - 302.25);
@@ -81,6 +87,13 @@ const HumanDesign = {
 
     // 1. Calculate Design Date (88 degrees solar arc prior)
     // Returns Julian Date for Design moment
+    /**
+     * Calculates the Design Date for a given Natal moment.
+     * The Design moment is when the Sun is exactly 88 degrees (solar arc) prior to the natal sun position.
+     * @param {number} natalJd - Natal Julian Date.
+     * @param {number} natalSunLon - Natal Sun longitude.
+     * @returns {number} Julian Date of the Design moment.
+     */
     calculateDesignDate: function (natalJd, natalSunLon) {
         let targetSunLon = natalSunLon - 88;
         if (targetSunLon < 0) targetSunLon += 360;
@@ -105,6 +118,12 @@ const HumanDesign = {
     },
 
     // 2. Main Calculation
+    /**
+     * Calculates the complete Human Design chart data for a given Natal moment.
+     * Includes Personality/Design activations, Channels, Centers, Type, and Authority.
+     * @param {number} natalJd - Natal Julian Date.
+     * @returns {Object} Complete Human Design data object.
+     */
     calculate: function (natalJd) {
         const natalSunLon = getHighPrecisionLongitude('Sun', natalJd);
         const designJd = this.calculateDesignDate(natalJd, natalSunLon);

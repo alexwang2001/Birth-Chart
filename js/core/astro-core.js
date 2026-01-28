@@ -48,6 +48,12 @@ const ELEMENTS = {
     }
 };
 
+/**
+ * Calculates heliocentric coordinates (x, y, z) for a given planet at a specific Julian Date.
+ * @param {string} planetId - The ID of the planet (e.g., 'Sun', 'Mercury', 'Venus', etc.).
+ * @param {number} jd - The Julian Date.
+ * @returns {Object} Heliocentric coordinates { x, y, z }.
+ */
 function getHeliocentric(planetId, jd) {
     const T = (jd - 2451545.0) / 36525.0;
     const el = ELEMENTS[planetId];
@@ -80,6 +86,12 @@ function getHeliocentric(planetId, jd) {
     return { x: x_h, y: y_h, z: z_h };
 }
 
+/**
+ * Calculates the geocentric longitude of a planet at a specific Julian Date.
+ * @param {string} planetId - The ID of the planet.
+ * @param {number} jd - The Julian Date.
+ * @returns {number} Geocentric longitude in degrees (0-360).
+ */
 function getGeocentricLongitude(planetId, jd) {
     const T = (jd - 2451545.0) / 36525.0;
     if (planetId === 'Moon') {
@@ -101,6 +113,12 @@ function getGeocentricLongitude(planetId, jd) {
     return normalize(lon);
 }
 
+/**
+ * Determines if a planet is in retrograde motion at a specific Julian Date.
+ * @param {string} planetId - The ID of the planet.
+ * @param {number} jd - The Julian Date.
+ * @returns {boolean} True if retrograde, false otherwise.
+ */
 function isRetrograde(planetId, jd) {
     if (planetId === 'Sun' || planetId === 'Moon') return false;
     const lon1 = getGeocentricLongitude(planetId, jd);
@@ -112,6 +130,12 @@ function isRetrograde(planetId, jd) {
 }
 
 // Improved Moon Calculation (Truncated Meeus/ELP-2000)
+/**
+ * Calculates high-precision Moon longitude using truncated Meeus/ELP-2000 terms.
+ * Source: Jean Meeus, "Astronomical Algorithms", Chapter 47.
+ * @param {number} jd - The Julian Date.
+ * @returns {number} Moon's geocentric longitude (degrees).
+ */
 function getMoonMeeus(jd) {
     const T = (jd - 2451545.0) / 36525.0;
 
@@ -148,6 +172,12 @@ function getMoonMeeus(jd) {
     return normalize(L_prime + Sigma_l);
 }
 
+/**
+ * Calculates high-precision geocentric longitude for a planet, including major perturbations.
+ * @param {string} planetId - The ID of the planet.
+ * @param {number} jd - The Julian Date.
+ * @returns {number} Longitude in degrees (0-360).
+ */
 function getHighPrecisionLongitude(planetId, jd) {
     const T = (jd - 2451545.0) / 36525.0;
 
@@ -174,6 +204,12 @@ function getHighPrecisionLongitude(planetId, jd) {
 
 
 
+/**
+ * Calculates Local Sidereal Time (LST) for a given Julian Date and Longitude.
+ * @param {number} jd - Julian Date.
+ * @param {number} lon - Geographical longitude (degrees).
+ * @returns {number} Sidereal time in degrees.
+ */
 function getSiderealTime(jd, lon) {
     const T = (jd - 2451545.0) / 36525.0;
     let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000.0;
@@ -181,6 +217,14 @@ function getSiderealTime(jd, lon) {
 }
 
 // House Calculation System
+/**
+ * Calculates house cusps for various house systems.
+ * @param {number} lst - Local Sidereal Time (degrees).
+ * @param {number} lat - Geographical latitude (degrees).
+ * @param {number} [eps=23.439] - Obliquity of the ecliptic.
+ * @param {string} [system='placidus'] - House system ('placidus', 'whole', 'equal').
+ * @returns {Object} House data { asc, mc, cusps }.
+ */
 function calculateHouses(lst, lat, eps = 23.439, system = 'placidus') {
     const RAMC = lst;
     const latRad = lat * DEG_TO_RAD;
@@ -257,6 +301,12 @@ function calculateHouses(lst, lat, eps = 23.439, system = 'placidus') {
 
 
 
+/**
+ * Calculates planetary transits for a given date and time.
+ * @param {string} transitDate - Date string (YYYY-MM-DD).
+ * @param {string} transitTime - Time string (HH:MM).
+ * @returns {Array<Object>} List of planet positions for the transit moment.
+ */
 function calculateTransits(transitDate, transitTime) {
     const jd = getJulianDate(transitDate, transitTime);
     return PLANETS.map(p => ({
