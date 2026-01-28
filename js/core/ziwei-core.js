@@ -452,6 +452,21 @@ const ZiWei = (function () {
         return sihuaInfo;
     }
 
+    /**
+     * Apply Star Strength (廟旺利陷) to all stars in palaces
+     * @param {Array} palaces - Palace array
+     */
+    function applyStarStrength(palaces) {
+        const strengthTable = ZIWEI_DATA.STRENGTH.TABLE;
+        palaces.forEach((palace, branchIdx) => {
+            palace.stars.forEach(star => {
+                if (strengthTable[star.id]) {
+                    star.strength = strengthTable[star.id][branchIdx];
+                }
+            });
+        });
+    }
+
     // ============================================================================
     // DAXIAN (大限) & LIUNIAN (流年) CALCULATION
     // ============================================================================
@@ -587,10 +602,13 @@ const ZiWei = (function () {
         // Step 7: Place stars
         placeStars(palaces, ziWeiPos, tianFuPos, lunar, birthHourBranch, yearStemIdx, yearBranchIdx);
 
-        // Step 8: Apply Si Hua (四化)
+        // Step 8: Apply Star Strength (廟旺利陷)
+        applyStarStrength(palaces);
+
+        // Step 9: Apply Si Hua (四化)
         const sihuaInfo = applySihua(palaces, yearStemIdx);
 
-        // Step 9: Return complete chart data
+        // Step 10: Return complete chart data
         return {
             lunar: lunar,
             bureau: bureau,

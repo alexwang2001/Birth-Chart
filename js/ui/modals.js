@@ -172,8 +172,13 @@ function showZiWeiInterpretation(palace) {
                 const s = sihuaData.TYPES[star.sihua];
                 sihuaTag = `<span style="font-size:0.8rem; background:${s.color}; color:#000; padding:2px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">${s.symbol}</span>`;
             }
+            let strengthTag = '';
+            if (star.strength) {
+                const s = ZIWEI_DATA.STRENGTH.LEVELS[star.strength];
+                strengthTag = `<span style="font-size:0.85rem; color:${s.color}; margin-left:4px; font-weight:normal;">(${star.strength})</span>`;
+            }
             return `<div style="display:inline-block; margin-right:15px; margin-bottom:10px;">
-                        <span style="color:${star.color}; font-weight:bold; font-size:1.4rem; text-shadow: 0 0 5px rgba(0,0,0,0.5);">${star.name}</span>${sihuaTag}
+                        <span style="color:${star.color}; font-weight:bold; font-size:1.4rem; text-shadow: 0 0 5px rgba(0,0,0,0.5);">${star.name}</span>${strengthTag}${sihuaTag}
                     </div>`;
         }).join('');
     } else {
@@ -210,10 +215,17 @@ function showZiWeiInterpretation(palace) {
                 `;
             }
 
+            let strengthBlock = '';
+            if (star.strength) {
+                const s = ZIWEI_DATA.STRENGTH.LEVELS[star.strength];
+                strengthBlock = `<span style="color:${s.color}; font-size:0.85rem; background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:10px; border:1px solid ${s.color}44;">${star.strength} - ${s.desc}</span>`;
+            }
+
             starDescriptionsHtml += `
             <div style="margin-bottom: 1.2rem; border-left: 2px solid ${color}; padding-left: 12px;">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <span style="color:${color}; font-weight:bold; font-size:1.1rem;">${star.name}${typeLabel}</span>
+                    ${strengthBlock}
                     ${starData ? `<small style="color:var(--text-dim);">${starData.meaning}</small>` : ''}
                 </div>
                 <div style="color: var(--text-light); font-size: 0.95rem; line-height: 1.5; margin-top:4px;">${desc}</div>

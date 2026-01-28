@@ -762,6 +762,14 @@ button:active {
 }
 
 /* New Sihua & Period Styles */
+/* Star Strength (廟旺利陷) */
+.star-strength {
+    font-size: 0.75rem;
+    margin-left: 1px;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
 .sihua-marker {
     font-size: 0.75rem;
     color: #000;

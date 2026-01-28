@@ -223,12 +223,18 @@ function renderZiWeiModule(zwData) {
                 if (star.type === "lucky") className += " star-lucky";
                 if (star.type === "ominous") className += " star-ominous";
 
+                let strengthTag = '';
+                if (star.strength) {
+                    const s = ZIWEI_DATA.STRENGTH.LEVELS[star.strength];
+                    strengthTag = `<span class="star-strength" style="color:${s.color}">${star.strength}</span>`;
+                }
+
                 let sihuaTag = '';
                 if (star.sihua) {
                     const s = ZIWEI_DATA.SIHUA.TYPES[star.sihua];
                     sihuaTag = `<span class="sihua-marker" style="background:${s.color}">${s.symbol}</span>`;
                 }
-                starsHtml += `<span class="${className}" style="color:${star.color}">${star.name}${sihuaTag}</span>`;
+                starsHtml += `<span class="${className}" style="color:${star.color}">${star.name}${strengthTag}${sihuaTag}</span>`;
             });
 
             let periodMarkers = '';
