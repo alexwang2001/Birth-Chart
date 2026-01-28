@@ -1,0 +1,230 @@
+/* Human Design Styles */
+
+/* Summary Cards */
+#hd-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.hd-card {
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.1) 0%, rgba(20, 10, 30, 0.4) 100%);
+    border: 1px solid rgba(255, 105, 180, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+.hd-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(255, 105, 180, 0.15);
+    border-color: rgba(255, 105, 180, 0.6);
+}
+
+.hd-card-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.hd-card-value {
+    color: #ff69b4;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
+}
+
+/* BodyGraph Simulation (CSS Grid) */
+.hd-bodygraph-container {
+    position: relative;
+    width: 320px;
+    height: 500px;
+    margin: 0 auto;
+    /* Center it visually */
+    background: radial-gradient(circle at center, rgba(255, 105, 180, 0.05) 0%, transparent 70%);
+    border-radius: 40px;
+    padding: 1rem;
+}
+
+/* Centers */
+.hd-center {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #333;
+    transition: all 0.3s;
+    cursor: default;
+    z-index: 2;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.hd-center.defined {
+    /* Colors handled inline or via specific class modifier */
+    color: #000;
+    border: none;
+}
+
+.hd-center.undefined {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Shapes */
+.shape-triangle-up {
+    width: 60px;
+    height: 60px;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    /* Basic CSS Triangle */
+}
+
+.shape-triangle-down {
+    width: 60px;
+    height: 60px;
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+}
+
+.shape-square {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    /* Slight round but mostly square */
+}
+
+.shape-diamond {
+    width: 50px;
+    height: 50px;
+    transform: rotate(45deg);
+}
+
+.shape-diamond span {
+    transform: rotate(-45deg);
+    /* Counter rotate text */
+}
+
+/* Specific Center Positions (Approximated for a 300x500 box) */
+.pos-head {
+    top: 20px;
+    left: 130px;
+    /* Center X */
+}
+
+.pos-ajna {
+    top: 90px;
+    left: 130px;
+}
+
+.pos-throat {
+    top: 160px;
+    left: 135px;
+    /* Square */
+}
+
+.pos-g {
+    top: 230px;
+    left: 135px;
+    /* Diamond */
+}
+
+.pos-heart {
+    top: 245px;
+    right: 40px;
+    /* Small triangle */
+    width: 40px;
+    height: 40px;
+}
+
+.pos-spleen {
+    top: 310px;
+    left: 30px;
+}
+
+.pos-solar {
+    top: 310px;
+    right: 30px;
+}
+
+.pos-sacral {
+    top: 320px;
+    left: 135px;
+}
+
+.pos-root {
+    top: 410px;
+    left: 135px;
+}
+
+/* Channels List */
+.hd-channels-panel {
+    background: rgba(20, 10, 30, 0.5);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 105, 180, 0.2);
+    min-height: 400px;
+}
+
+.hd-channel-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.hd-channel-item:last-child {
+    border-bottom: none;
+}
+
+.hd-channel-id {
+    color: #ff69b4;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: 1.1rem;
+}
+
+/* Planet Table */
+.hd-planet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.hd-planet-col-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hd-planet-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.4rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.hd-planet-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}

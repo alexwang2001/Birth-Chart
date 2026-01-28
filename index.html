@@ -6,11 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>極致星盤 - 專業占星計算器</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="human-design.css">
     <!-- Scripts loaded sequentially for non-module usage -->
     <script src="astro-data.js"></script>
     <script src="astro-core.js"></script>
     <script src="ziwei-core.js"></script>
     <script src="astro-chart.js"></script>
+    <script src="human-design-core.js"></script>
 </head>
 
 <body>
@@ -183,6 +185,31 @@
                 <h3>相位列表 (Aspects)</h3>
                 <div class="aspect-grid" id="aspect-list">
                     <!-- Aspects will be injected here -->
+                </div>
+            </div>
+
+            <!-- Human Design Panel -->
+            <div class="results-panel" id="hd-results-list" style="margin-top: 2rem; display: none;">
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255, 105, 180, 0.3); padding-bottom: 0.5rem;">
+                    <span style="font-size: 1.2rem;">🧬</span>
+                    <h3 style="color: #ff69b4; margin: 0;">人類圖 (Human Design)</h3>
+                </div>
+                <div id="hd-summary"
+                    style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <!-- Type, Profile, Authority -->
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:2rem;">
+                    <!-- Simple Center Viz -->
+                    <div id="hd-centers-grid"
+                        style="flex:1; min-width:300px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                    </div>
+                    <!-- Channel List -->
+                    <div id="hd-channels-list" style="flex:1; min-width:250px;">
+                        <h4 style="color:var(--text-gold); margin-bottom:0.5rem;">開啟通道 (Channels)</h4>
+                    </div>
+                </div>
+                <div id="hd-planets-table" style="margin-top: 1.5rem; font-size: 0.9rem;">
                 </div>
             </div>
 

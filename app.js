@@ -771,6 +771,142 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
             });
         }
 
+        // --- Human Design Calculation ---
+        const hdData = HumanDesign.calculate(jd);
+        const hdPanel = document.getElementById('hd-results-list');
+        if (hdPanel && hdData) {
+            hdPanel.style.display = 'block';
+
+            // 1. Summary Cards
+            const summaryDiv = document.getElementById('hd-summary');
+            summaryDiv.innerHTML = `
+                <div class="hd-card">
+                    <div class="hd-card-label">類型 (Type)</div>
+                    <div class="hd-card-value" style="font-size:1.1rem;">${hdData.type}</div>
+                </div>
+                 <div class="hd-card">
+                    <div class="hd-card-label">人生角色 (Profile)</div>
+                    <div class="hd-card-value">${hdData.profile}</div>
+                </div>
+                 <div class="hd-card">
+                    <div class="hd-card-label">內在權威 (Authority)</div>
+                    <div class="hd-card-value" style="font-size:1.1rem;">${hdData.authority}</div>
+                </div>
+             `;
+
+            // 2. BodyGraph Visualization
+            const centersDiv = document.getElementById('hd-centers-grid');
+            centersDiv.className = 'hd-bodygraph-container';
+            centersDiv.style.display = 'block'; // Override flex/grid from before
+            centersDiv.innerHTML = '';
+
+            const centerConfig = [
+                { id: 'Head', name: '頭腦', class: 'pos-head shape-triangle-up', color: '#ffff70' }, // Yellow
+                { id: 'Ajna', name: '邏輯', class: 'pos-ajna shape-triangle-down', color: '#69ff8c' }, // Green
+                { id: 'Throat', name: '喉嚨', class: 'pos-throat shape-square', color: '#bc8cff' }, // Purple
+                { id: 'G', name: 'G', class: 'pos-g shape-diamond', color: '#ffff70' }, // Yellow
+                { id: 'Heart', name: '意志', class: 'pos-heart shape-triangle-down', color: '#ff5f5f' }, // Red
+                { id: 'Spleen', name: '直覺', class: 'pos-spleen shape-triangle-up', color: '#bc8cff' }, // Purple
+                { id: 'Solar', name: '情緒', class: 'pos-solar shape-triangle-up', color: '#bc8cff' }, // Brown/Purple
+                { id: 'Sacral', name: '薦骨', class: 'pos-sacral shape-square', color: '#ff5f5f' }, // Red
+                { id: 'Root', name: '根部', class: 'pos-root shape-square', color: '#bc8cff' } // Brown
+            ];
+
+            centerConfig.forEach(c => {
+                const isDefined = hdData.centers[c.id].defined;
+                const el = document.createElement('div');
+                el.className = `hd-center ${c.class} ${isDefined ? 'defined' : 'undefined'}`;
+
+                // Content inside shape (rotates back if diamond)
+                const span = document.createElement('span');
+                span.textContent = isDefined ? c.name : ''; // Only show name if defined
+                if (c.class.includes('diamond')) span.style.transform = 'rotate(-45deg)';
+                el.appendChild(span);
+
+                if (isDefined) {
+                    el.style.backgroundColor = c.color;
+                    // Add glow
+                    el.style.boxShadow = `0 0 20px ${c.color}66`; // 40% opacity hex
+                }
+
+                centersDiv.appendChild(el);
+            });
+
+            // 3. Channels List (Styled Panel)
+            const chanDiv = document.getElementById('hd-channels-list');
+            chanDiv.className = 'hd-channels-panel';
+            chanDiv.innerHTML = '<h4 style="color:var(--text-gold); margin-bottom:1rem; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid rgba(255,105,180,0.2); padding-bottom:0.8rem;">開啟通道 (Active Channels)</h4>';
+
+            const channelNames = {
+                '1-8': '靈感 (Inspiration)', '2-14': '脈動 (Beat)', '3-60': '突變 (Mutation)', '4-63': '邏輯 (Logic)',
+                '5-15': '韻律 (Rhythm)', '6-59': '親密 (Intimacy)', '7-31': '創始 (Alpha)', '9-52': '專注 (Concentration)',
+                '10-20': '覺醒 (Awakening)', '10-34': '探索 (Exploration)', '10-57': '完美 (Perfected Form)', '11-56': '好奇 (Curiosity)',
+                '12-22': '開放 (Openness)', '13-33': '浪子 (Prodigal)', '16-48': '才華 (Wavelength)', '17-62': '接受 (Acceptance)',
+                '18-58': '批判 (Judgment)', '19-49': '整合 (Synthesis)', '20-34': '魅力 (Charisma)', '20-57': '腦波 (Brainwave)',
+                '21-45': '金錢 (Money)', '23-43': '架構 (Structuring)', '24-61': '察覺 (Awareness)', '25-51': '發起 (Initiation)',
+                '26-44': '傳遞 (Surrender)', '27-50': '保存 (Preservation)', '28-38': '困頓 (Struggle)', '29-46': '發現 (Discovery)',
+                '30-41': '夢想 (Recognition)', '32-54': '轉化 (Transformation)', '34-57': '力量 (Power)', '35-36': '無常 (Transitoriness)',
+                '37-40': '社群 (Community)', '39-55': '情緒 (Emoting)', '42-53': '成熟 (Maturation)', '47-64': '抽象 (Abstraction)'
+            };
+
+            if (hdData.activeChannels.length === 0) {
+                chanDiv.innerHTML += '<div style="color:rgba(255,255,255,0.4); font-style:italic; text-align:center; margin-top:2rem;">無特定通道定義 (Reflector)</div>';
+            } else {
+                const listContainer = document.createElement('div');
+                listContainer.style.display = 'flex';
+                listContainer.style.flexDirection = 'column';
+
+                hdData.activeChannels.forEach(ch => {
+                    const key = `${ch[0]}-${ch[1]}`;
+                    const reverseKey = `${ch[1]}-${ch[0]}`;
+                    const name = channelNames[key] || channelNames[reverseKey] || '通道';
+
+                    const item = document.createElement('div');
+                    item.className = 'hd-channel-item';
+                    item.innerHTML = `
+                        <span class="hd-channel-id">${ch[0]}-${ch[1]}</span>
+                        <span>${name}</span>
+                     `;
+                    listContainer.appendChild(item);
+                });
+                chanDiv.appendChild(listContainer);
+            }
+
+            // 4. Planets Table (Two columns)
+            const tDiv = document.getElementById('hd-planets-table');
+            tDiv.className = 'hd-planet-grid';
+
+            let pCol = `<div class="hd-planet-col">
+                            <div class="hd-planet-col-header" style="color:#fff;">
+                                <span>個性 (Personality)</span>
+                                <span>意識 (Black)</span>
+                            </div>`;
+
+            hdData.personality.forEach(p => {
+                pCol += `<div class="hd-planet-row">
+                    <span style="color:#ccc;">${p.id}</span>
+                    <span style="font-family:monospace; font-weight:bold;">${p.gate}.${p.line}</span>
+                 </div>`;
+            });
+            pCol += '</div>';
+
+            let dCol = `<div class="hd-planet-col">
+                            <div class="hd-planet-col-header" style="color:#ff5f5f;">
+                                <span>設計 (Design)</span>
+                                <span>潛意識 (Red)</span>
+                            </div>`;
+
+            hdData.design.forEach(d => {
+                dCol += `<div class="hd-planet-row">
+                    <span style="color:#ccc;">${d.id}</span>
+                    <span style="font-family:monospace; font-weight:bold; color:#ff5f5f;">${d.gate}.${d.line}</span>
+                 </div>`;
+            });
+            dCol += '</div>';
+
+            tDiv.innerHTML = pCol + dCol;
+        }
+
 
         // Save to history
         const isManual = document.getElementById('manual-coords-toggle').checked;
