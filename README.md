@@ -2,6 +2,9 @@
 
 This is a professional astrological birth chart generator produced by **Alex** and **Gemini (Antigravity)**. This application is optimized for the Mandarin-speaking users and features a comprehensive local database for Taiwan locations.
 
+## Live Demo
+🌐 **The application is deployed on GitHub Pages**: [https://alexwang2001.github.io/Birth-Chart/](https://alexwang2001.github.io/Birth-Chart/)
+
 ## Project Description
 A comprehensive tool for generating astrological birth charts and transit data completely offline. It runs directly in your browser without any server-side dependencies.
 
