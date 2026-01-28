@@ -96,7 +96,7 @@ function updateResults(planetPos, houseData, transitPlanets = null) {
     list.innerHTML = '';
     aspectDiv.innerHTML = '';
 
-    // 1. Calculate and Populate Aspects List
+    // 1. Calculate and Prepare Aspects Logic
     const natalAspects = calculateAspects(planetPos);
     let allAspects = [...natalAspects];
 
@@ -108,30 +108,21 @@ function updateResults(planetPos, houseData, transitPlanets = null) {
 
     allAspects.sort((a, b) => (parseFloat(a.orb) - parseFloat(b.orb)));
 
-    allAspects.forEach(asp => {
-        const item = document.createElement('div');
-        item.className = 'aspect-item';
-        if (asp.isTransit) {
-            item.style.borderLeft = '3px solid #69ff8c';
-            item.style.background = 'rgba(105, 255, 140, 0.05)';
-        }
+    // Store for filtering
+    aspectDiv._allAspects = allAspects;
 
-        const typeLabel = asp.isTransit ? (asp.p1.isTransit && asp.p2.isTransit ? '流年相位' : '流年-本命') : '本命相位';
+    // Setup Listeners if not present
+    if (!aspectDiv._hasListener) {
+        document.querySelectorAll('input[name="asp-filter"]').forEach(radio => {
+            radio.addEventListener('change', renderAspectsInternal);
+        });
+        aspectDiv._hasListener = true;
+    }
 
-        item.innerHTML = `
-            <span class="aspect-symbol" style="color: ${asp.type.color}">${asp.type.symbol}</span>
-            <div style="flex: 1;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <strong>${asp.p1.name} ${asp.type.name} ${asp.p2.name}</strong>
-                    <span style="font-size:0.65rem; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:1px 4px; border-radius:3px;">${typeLabel}</span>
-                </div>
-                <div style="font-size: 0.7rem; color: var(--text-dim);">容許度: ${asp.orb}°</div>
-            </div>
-        `;
-        aspectDiv.appendChild(item);
-    });
+    // Initial Render
+    renderAspectsInternal();
 
-    if (aspectDiv.innerHTML === '') aspectDiv.innerHTML = '<div style="color: var(--text-dim); padding: 1rem;">未發現顯著相位</div>';
+    // 2. Populate Planet Results
 
     // 2. Populate Planet Results
     planetPos.forEach(p => {
@@ -224,4 +215,49 @@ function updateResults(planetPos, houseData, transitPlanets = null) {
             ${renderBar('變動 (Mutable)', counts.mutable, '#66ffff')}
         `;
     }
+}
+
+
+/**
+ * Internal helper to render filtered aspects
+ */
+function renderAspectsInternal() {
+    const aspectDiv = document.getElementById('aspect-list');
+    if (!aspectDiv || !aspectDiv._allAspects) return;
+
+    const allAspects = aspectDiv._allAspects;
+    const filter = document.querySelector('input[name="asp-filter"]:checked')?.value || 'all';
+
+    const filtered = allAspects.filter(asp => {
+        if (filter === 'all') return true;
+        if (filter === 'natal') return !asp.isTransit;
+        if (filter === 'transit') return asp.isTransit;
+        return true;
+    });
+
+    aspectDiv.innerHTML = '';
+    filtered.forEach(asp => {
+        const item = document.createElement('div');
+        item.className = 'aspect-item';
+        if (asp.isTransit) {
+            item.style.borderLeft = '3px solid #69ff8c';
+            item.style.background = 'rgba(105, 255, 140, 0.05)';
+        }
+
+        const typeLabel = asp.isTransit ? (asp.p1.isTransit && asp.p2.isTransit ? '流年相位' : '流年-本命') : '本命相位';
+
+        item.innerHTML = `
+            <span class="aspect-symbol" style="color: ${asp.type.color}">${asp.type.symbol}</span>
+            <div style="flex: 1;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>${asp.p1.name} ${asp.type.name} ${asp.p2.name}</strong>
+                    <span style="font-size:0.65rem; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:1px 4px; border-radius:3px;">${typeLabel}</span>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">容許度: ${asp.orb}°</div>
+            </div>
+        `;
+        aspectDiv.appendChild(item);
+    });
+
+    if (aspectDiv.innerHTML === '') aspectDiv.innerHTML = '<div style="color: var(--text-dim); padding: 1rem;">無符合條件之相位</div>';
 }

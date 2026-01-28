@@ -210,8 +210,19 @@
             </div>
 
             <div class="aspects-table-container">
-                <h3>相位列表 (Aspects)</h3>
-                <div class="aspect-grid" id="aspect-list">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+                    <h3>相位列表 (Aspects)</h3>
+                    <div id="aspect-filters" style="font-size: 0.85rem; display: flex; gap: 10px;">
+                        <label style="cursor:pointer; display:flex; align-items:center;"><input type="radio"
+                                name="asp-filter" value="all" checked style="margin-right:4px;">全部</label>
+                        <label style="cursor:pointer; display:flex; align-items:center;"><input type="radio"
+                                name="asp-filter" value="natal" style="margin-right:4px;">本命</label>
+                        <label style="cursor:pointer; display:flex; align-items:center;"><input type="radio"
+                                name="asp-filter" value="transit" style="margin-right:4px;">行運</label>
+                    </div>
+                </div>
+                <div class="aspect-grid" id="aspect-list"
+                    style="max-height: 400px; overflow-y: auto; padding-right: 5px;">
                     <!-- Aspects will be injected here -->
                 </div>
             </div>
