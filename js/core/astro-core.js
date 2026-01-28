@@ -316,3 +316,42 @@ function calculateTransits(transitDate, transitTime) {
         isTransit: true
     }));
 }
+
+/**
+ * Calculates aspects between two lists of planet positions.
+ * @param {Array<Object>} list1 - First set of planets (e.g., Natal).
+ * @param {Array<Object>} list2 - Second set of planets (e.g., Transit). If null, list1 vs list1.
+ * @returns {Array<Object>} List of aspects found.
+ */
+function calculateAspects(list1, list2 = null) {
+    const aspects = [];
+    const isSelf = (list2 === null);
+    const set2 = isSelf ? list1 : list2;
+
+    for (let i = 0; i < list1.length; i++) {
+        const startIdx = isSelf ? i + 1 : 0;
+        for (let j = startIdx; j < set2.length; j++) {
+            const p1 = list1[i];
+            const p2 = set2[j];
+            if (p1.id === p2.id && isSelf) continue;
+
+            const diff = Math.abs(p1.longitude - p2.longitude);
+            const angle = diff > 180 ? 360 - diff : diff;
+
+            for (const type of ASPECT_TYPES) {
+                const orb = Math.abs(angle - type.angle);
+                if (orb <= type.orb) {
+                    aspects.push({
+                        p1,
+                        p2,
+                        type,
+                        orb: orb.toFixed(2),
+                        isTransit: !isSelf
+                    });
+                    break;
+                }
+            }
+        }
+    }
+    return aspects;
+}

@@ -90,42 +90,47 @@ function updateTransitResults(transitPlanets, natalHouseData) {
 /**
  * Updates the main planet results and element analysis bars.
  */
-function updateResults(planetPos, houseData) {
+function updateResults(planetPos, houseData, transitPlanets = null) {
     const list = document.getElementById('results-list');
     const aspectDiv = document.getElementById('aspect-list');
     list.innerHTML = '';
     aspectDiv.innerHTML = '';
 
     // 1. Calculate and Populate Aspects List
-    for (let i = 0; i < planetPos.length; i++) {
-        for (let j = i + 1; j < planetPos.length; j++) {
-            const p1 = planetPos[i];
-            const p2 = planetPos[j];
-            const diff = Math.abs(p1.longitude - p2.longitude);
-            const angle = diff > 180 ? 360 - diff : diff;
+    const natalAspects = calculateAspects(planetPos);
+    let allAspects = [...natalAspects];
 
-            let aspect = null;
-            if (Math.abs(angle - 0) < 8) aspect = { name: '合相', symbol: '☌', color: '#ffffff' };
-            else if (Math.abs(angle - 180) < 8) aspect = { name: '對分', symbol: '☍', color: '#ff3333' };
-            else if (Math.abs(angle - 120) < 8) aspect = { name: '三分', symbol: '△', color: '#33ff33' };
-            else if (Math.abs(angle - 90) < 8) aspect = { name: '四分', symbol: '□', color: '#ff9933' };
-            else if (Math.abs(angle - 60) < 6) aspect = { name: '六分', symbol: '✱', color: '#33ffff' };
-
-            if (aspect) {
-                const orb = Math.abs(angle - (aspect.name === '合相' ? 0 : aspect.name === '對分' ? 180 : aspect.name === '三分' ? 120 : aspect.name === '四分' ? 90 : 60)).toFixed(1);
-                const item = document.createElement('div');
-                item.className = 'aspect-item';
-                item.innerHTML = `
-                    <span class="aspect-symbol" style="color: ${aspect.color}">${aspect.symbol}</span>
-                    <div style="flex: 1;">
-                        <strong>${p1.name} ${aspect.name} ${p2.name}</strong>
-                        <div style="font-size: 0.7rem; color: var(--text-dim);">容許度: ${orb}°</div>
-                    </div>
-                `;
-                aspectDiv.appendChild(item);
-            }
-        }
+    if (transitPlanets) {
+        const transitNatalAspects = calculateAspects(planetPos, transitPlanets);
+        const transitTransitAspects = calculateAspects(transitPlanets);
+        allAspects = allAspects.concat(transitNatalAspects, transitTransitAspects);
     }
+
+    allAspects.sort((a, b) => (parseFloat(a.orb) - parseFloat(b.orb)));
+
+    allAspects.forEach(asp => {
+        const item = document.createElement('div');
+        item.className = 'aspect-item';
+        if (asp.isTransit) {
+            item.style.borderLeft = '3px solid #69ff8c';
+            item.style.background = 'rgba(105, 255, 140, 0.05)';
+        }
+
+        const typeLabel = asp.isTransit ? (asp.p1.isTransit && asp.p2.isTransit ? '流年相位' : '流年-本命') : '本命相位';
+
+        item.innerHTML = `
+            <span class="aspect-symbol" style="color: ${asp.type.color}">${asp.type.symbol}</span>
+            <div style="flex: 1;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>${asp.p1.name} ${asp.type.name} ${asp.p2.name}</strong>
+                    <span style="font-size:0.65rem; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:1px 4px; border-radius:3px;">${typeLabel}</span>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">容許度: ${asp.orb}°</div>
+            </div>
+        `;
+        aspectDiv.appendChild(item);
+    });
+
     if (aspectDiv.innerHTML === '') aspectDiv.innerHTML = '<div style="color: var(--text-dim); padding: 1rem;">未發現顯著相位</div>';
 
     // 2. Populate Planet Results

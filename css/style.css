@@ -287,11 +287,19 @@ button:active {
     align-items: center;
     gap: 0.8rem;
     font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.aspect-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
 }
 
 .aspect-symbol {
     font-size: 1.2rem;
     font-weight: bold;
+    width: 24px;
+    text-align: center;
 }
 
 .loading-overlay {

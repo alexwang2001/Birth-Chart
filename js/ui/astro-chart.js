@@ -1,6 +1,6 @@
-function drawChart(planetPos, houseData, shrinkInner = false, onPlanetClick) {
+function drawChart(planetPos, houseData, shrinkInner = false, onPlanetClick, aspects = []) {
     const center = { x: 300, y: 300 };
-    const radius = shrinkInner ? 220 : 280; // Shrink if transit mode
+    const radius = shrinkInner ? 220 : 280;
 
     // Clear layers
     document.getElementById('zodiac-ring').innerHTML = '';
@@ -97,44 +97,30 @@ function drawChart(planetPos, houseData, shrinkInner = false, onPlanetClick) {
     });
 
     // Draw Aspects
-    const pRadius = radius - 60; // Planets inside zodiac
+    const pRadius = radius - 60;
+    aspects.forEach(asp => {
+        const a1 = (180 - (asp.p1.longitude - houseData.asc)) * DEG_TO_RAD;
+        const a2 = (180 - (asp.p2.longitude - houseData.asc)) * DEG_TO_RAD;
 
-    for (let i = 0; i < planetPos.length; i++) {
-        for (let j = i + 1; j < planetPos.length; j++) {
-            const p1 = planetPos[i];
-            const p2 = planetPos[j];
-            const diff = Math.abs(p1.longitude - p2.longitude);
-            const angle = diff > 180 ? 360 - diff : diff;
+        const x1 = center.x + (pRadius - 10) * Math.cos(a1);
+        const y1 = center.y + (pRadius - 10) * Math.sin(a1);
+        const x2 = center.x + (pRadius - 10) * Math.cos(a2);
+        const y2 = center.y + (pRadius - 10) * Math.sin(a2);
 
-            let aspect = null;
-            if (Math.abs(angle - 0) < 8) aspect = { name: 'Conjunction', color: '#ffffff' };
-            else if (Math.abs(angle - 180) < 8) aspect = { name: 'Opposition', color: '#ff3333' };
-            else if (Math.abs(angle - 120) < 8) aspect = { name: 'Trine', color: '#33ff33' };
-            else if (Math.abs(angle - 90) < 8) aspect = { name: 'Square', color: '#ff9933' };
-            else if (Math.abs(angle - 60) < 6) aspect = { name: 'Sextile', color: '#33ffff' };
-
-            if (aspect) {
-                const a1 = (180 - (p1.longitude - houseData.asc)) * DEG_TO_RAD;
-                const a2 = (180 - (p2.longitude - houseData.asc)) * DEG_TO_RAD;
-
-                const x1 = center.x + (pRadius - 10) * Math.cos(a1);
-                const y1 = center.y + (pRadius - 10) * Math.sin(a1);
-                const x2 = center.x + (pRadius - 10) * Math.cos(a2);
-                const y2 = center.y + (pRadius - 10) * Math.sin(a2);
-
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", x1);
-                line.setAttribute("y1", y1);
-                line.setAttribute("x2", x2);
-                line.setAttribute("y2", y2);
-                line.setAttribute("stroke", aspect.color);
-                line.setAttribute("stroke-width", "1");
-                line.setAttribute("stroke-dasharray", aspect.name === 'Opposition' ? "4 2" : "none");
-                line.setAttribute("opacity", "0.4");
-                aspectsGroup.appendChild(line);
-            }
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.setAttribute("stroke", asp.type.color);
+        line.setAttribute("stroke-width", "1");
+        line.setAttribute("stroke-dasharray", asp.type.english === 'Opposition' ? "4 2" : "none");
+        line.setAttribute("opacity", asp.isTransit ? "0.6" : "0.3");
+        if (asp.isTransit) {
+            line.setAttribute("stroke-width", "1.5");
         }
-    }
+        aspectsGroup.appendChild(line);
+    });
 
     // Draw Planets
     planetPos.forEach((p, idx) => {

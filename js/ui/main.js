@@ -139,18 +139,25 @@ function renderAllModules() {
     // --- Astro Rendering ---
     updateHemisphereAnalysis(planets, houses.cusps);
 
+    const natalAspects = calculateAspects(planets);
+
     if (transitDate) {
         const transitPlanets = calculateTransits(transitDate, transitTime);
-        drawChart(planets, houses, true, showInterpretation);
+        const transitNatalAspects = calculateAspects(planets, transitPlanets);
+        const transitTransitAspects = calculateAspects(transitPlanets);
+
+        // Display all aspects on chart (or maybe just natal + transit-natal)
+        drawChart(planets, houses, true, showInterpretation, [...natalAspects, ...transitNatalAspects]);
         drawTransitRing(transitPlanets, houses.asc, houses.cusps, showTransitInterpretation);
         updateTransitResults(transitPlanets, houses);
+        updateResults(planets, houses, transitPlanets); // Pass transit planets here
         document.getElementById('transit-layer').style.display = 'block';
     } else {
-        drawChart(planets, houses, false, showInterpretation);
+        drawChart(planets, houses, false, showInterpretation, natalAspects);
+        updateResults(planets, houses);
         document.getElementById('transit-results-list').style.display = 'none';
         document.getElementById('transit-layer').style.display = 'none';
     }
-    updateResults(planets, houses);
 
     // --- Zi Wei Rendering ---
     if (zwData) {

@@ -30,6 +30,14 @@ const PLANETS = [
     { id: 'NorthNode', name: '北交點', symbol: '☊', color: '#ffcc66' }
 ];
 
+const ASPECT_TYPES = [
+    { name: '合相', symbol: '☌', angle: 0, orb: 8, color: '#ffffff', english: 'Conjunction' },
+    { name: '對分相', symbol: '☍', angle: 180, orb: 8, color: '#ff3333', english: 'Opposition' },
+    { name: '三分相', symbol: '△', angle: 120, orb: 8, color: '#33ff33', english: 'Trine' },
+    { name: '四分相', symbol: '□', angle: 90, orb: 8, color: '#ff9933', english: 'Square' },
+    { name: '六分相', symbol: '*', angle: 60, orb: 6, color: '#33ffff', english: 'Sextile' }
+];
+
 const PLANET_MEANINGS = {
     'Sun': '太陽代表您的核心人格、生命意志與自我實現的方向。它是命盤中最重要的生命能量來源。',
     'Moon': '月亮掌管您的情緒反應、內在安全感、潛意識習慣以及對母親或滋養能量的感受。',
