@@ -49,7 +49,8 @@ function showInterpretation(pointId, pointName, symbol, signName, houseIdx) {
 
     // Retrograde check
     if (pointId !== 'ASC' && pointId !== 'MC') {
-        const planetData = currentPlanetPositions.find(p => p.id === pointId);
+        const { planets } = AppState.results.astro;
+        const planetData = planets.find(p => p.id === pointId);
         if (planetData && planetData.isRetrograde) {
             combined += `<br><br><span style="color: #ff5f5f; font-weight: bold;">⚠️ 逆行提示：</span><br>目前該行星正處於逆行狀態。這並不代表凶兆，而是意味著能量的發揮會比較內斂、延遲，或者您需要透過反覆的內省與回顧，才能成熟地運用這股力量。`;
         }
@@ -110,8 +111,8 @@ function showTransitInterpretation(planet, houseIdx) {
         'NorthNode': "今生發展的方向與課題。"
     };
 
-    if (houseIdx === undefined && currentHouseData) {
-        houseIdx = getHouseIndex(planet.longitude, currentHouseData.cusps);
+    if (houseIdx === undefined && AppState.results.astro.houses) {
+        houseIdx = getHouseIndex(planet.longitude, AppState.results.astro.houses.cusps);
     }
 
     const impactDesc = (TRANSIT_HOUSE_IMPACTS[planet.id] && TRANSIT_HOUSE_IMPACTS[planet.id][houseIdx])
