@@ -173,9 +173,61 @@ function getHighPrecisionLongitude(id, jd) {
         return normalize(125.04452 - 1934.136261 * T + 0.0020708 * T * T);
     }
     if (id === 'Chiron') {
-        // Approximate Chiron (not in VSOP87)
-        const T = (jd - 2451545.0) / 36525.0;
-        return normalize(260 + 20 * T);
+        // Chiron Elements (JPL Horizons, Epoch 2017, J2000 Frame)
+        // Using Keplerian Elements for much better accuracy than linear approx
+        const e = 0.382552372;
+        const q = 8.42445079;
+        const Tp = 2450143.460017;
+        const node = 209.201944 * D2R;
+        const w = 339.629568 * D2R;
+        const i = 6.9299 * D2R;
+        const a = q / (1 - e);
+        const n = 0.9856076686 / Math.pow(a, 1.5); // deg per day (using Gaussian constant approx)
+
+        // Mean Anomaly
+        let M = normalize((jd - Tp) * n) * D2R;
+
+        // Solve Kepler Equation: M = E - e*sin(E)
+        let E = M;
+        let delta = 1;
+        let iter = 0;
+        while (Math.abs(delta) > 1e-7 && iter < 100) {
+            delta = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+            E -= delta;
+            iter++;
+        }
+
+        // True Anomaly (v) and Radius (r)
+        const v = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+        const r = a * (1 - e * Math.cos(E));
+
+        // Heliocentric coordinates in orbital plane
+        // x' = r * cos(v)
+        // y' = r * sin(v)
+        // z' = 0
+
+        // Rotate to Ecliptic (J2000)
+        // u = v + w (argument of latitude)
+        const u = v + w;
+
+        // Heliocentric J2000 coords
+        const x_h = r * (Math.cos(node) * Math.cos(u) - Math.sin(node) * Math.sin(u) * Math.cos(i));
+        const y_h = r * (Math.sin(node) * Math.cos(u) + Math.cos(node) * Math.sin(u) * Math.cos(i));
+        const z_h = r * (Math.sin(u) * Math.sin(i));
+
+        // Geocentric Conversion
+        const earth = getHeliocentric('Earth', jd);
+        if (!earth) return 0;
+
+        const dx = x_h - earth.x;
+        const dy = y_h - earth.y;
+        const dz = z_h - earth.z; // Chiron has significant inclination, so z matters if we wanted latitude, but for longitude atan2(dy, dx) is primary
+
+        // Longitude (J2000)
+        let lon = Math.atan2(dy, dx) * R2D;
+
+        // Precess to Date
+        return addPrecession(normalize(lon), jd);
     }
     if (id === 'Pluto') {
         // Pluto approximation (not in VSOP87A)
@@ -202,6 +254,7 @@ function getHighPrecisionLongitude(id, jd) {
 
         const x_h = r * (Math.cos(N) * Math.cos(u) - Math.sin(N) * Math.sin(u) * Math.cos(i));
         const y_h = r * (Math.sin(N) * Math.cos(u) + Math.cos(N) * Math.sin(u) * Math.cos(i));
+        // const z_h = ... (Pluto has inclination too, similar to Chiron)
 
         const earth = getHeliocentric('Earth', jd);
         if (!earth) return 0;

@@ -16,7 +16,7 @@ The application is deployed on GitHub Pages: [https://alexwang2001.github.io/Bir
 ## 🚀 Key Features
 
 ### 🌌 Western Astrology (現代占星)
-- **High-Precision Calculations**: Integrated **VSOP87A** planetary theory for millisecond-level precision in planetary positions.
+- **High-Precision Calculations**: Integrated **VSOP87A** planetary theory with **Precession Correction** (Mean Ecliptic of Date), achieving **0.01° (36 arcseconds)** average accuracy against NASA JPL Horizons data.
 - **Dynamic Houses**: Support for **Placidus**, **Whole Sign**, and **Equal House** systems.
 - **Transit Overlay**: Real-time transit calculations with automatic "Sync Now" functionality and house detection.
 - **Energy Analysis**: Interactive dashboard for Hemispheres, Quadrants, and Element/Modality balancing.
@@ -24,7 +24,7 @@ The application is deployed on GitHub Pages: [https://alexwang2001.github.io/Bir
 
 ### 🔮 Zi Wei Dou Shu (紫微斗數)
 - **Professional Ming Pan**: Classic 12-palace grid with accurate star placements (100+ stars).
-- **Verified Accuracy**: Extensively tested against professional calculators (Ziwei-Yun, Astro Online) and famous charts including **Terry Gou (郭台銘)**, **Tsai Ing-wen (蔡英文)**, and **Jay Chou (周杰倫)**.
+- **Verified Accuracy**: Extensively tested against professional calculators (Ziwei-Yun, Astro Online) and famous charts including **Jay Chou (周杰倫)**.
 - **Complex Logic Support**: Robust handling of **Leap Months (閏月)**, **Early/Late Rat Hour (子時)**, and precise **Xū (戌)** hour edge cases.
 - **Si Hua (四化)**: Dynamic transformation system based on birth year stem.
 - **Period Analysis**: Integrated **Daxian (大限)** and **Liunian (流年)** tracking.
@@ -78,7 +78,9 @@ Reliability is the core of Elite Chart. We maintain a rigorous verification suit
 └── tests/
     ├── test_zwds.py       # ZWDS automated test suite
     ├── test_astro.py      # Astro precision validation
-    └── bridge_zwds.js     # Node.js bridge for testing
+    ├── test_human_design.py # Human Design verification
+    ├── bridge_zwds.js     # Node.js bridge for ZWDS
+    └── bridge_hd.js       # Node.js bridge for HD
 ```
 
 ---

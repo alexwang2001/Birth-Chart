@@ -268,7 +268,8 @@ const HumanDesign = {
         const dSun = design.find(d => d.id === 'Sun');
 
         const profile = `${pSun.line}/${dSun.line}`;
-        const profileName = PROFILES[profile] || `${profile} (Profile)`;
+        const profileText = PROFILES[profile] || '(Unknown Profile)';
+        const profileName = `${profile} ${profileText}`;
 
         // 7. Authority (Hierarchy)
         // 1. Solar Plexus (Emotional)
