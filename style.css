@@ -488,5 +488,139 @@ button:active {
 .balance-bar-fill {
     height: 100%;
     border-radius: 4px;
-    transition: width 0.5s ease-out;
+}
+
+/* Zi Wei Dou Shu Grid Styling */
+.ziwei-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, minmax(130px, auto));
+    /* Increased min-height */
+    gap: 0.5rem;
+    grid-template-areas:
+        "si wu wei shen"
+        "chen center center you"
+        "mao center center xu"
+        "yin chou zi hai";
+    background: rgba(20, 10, 30, 0.5);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(188, 140, 255, 0.2);
+}
+
+.ziwei-cell {
+    background: rgba(30, 20, 40, 0.8);
+    border: 1px solid rgba(188, 140, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.8rem;
+    /* Increased padding */
+    min-height: 140px;
+    /* Increased min-height */
+    position: relative;
+    transition: all 0.3s;
+}
+
+.ziwei-cell:hover {
+    background: rgba(50, 30, 70, 0.9);
+    border-color: rgba(188, 140, 255, 0.5);
+}
+
+/* Make internal test larger */
+.ziwei-cell .palace-header {
+    /* Previously defined inline, but we can override or set here if I change JS. 
+       Actually JS uses inline styles for header. I should rely on CSS class if possible, 
+       but for now I will just ensure the stars are larger in JS or add a rule here that cascades. */
+}
+
+.stars-container {
+    /* Target the container of stars */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 1.8rem;
+}
+
+.stars-container span {
+    font-size: 1.1rem !important;
+    /* Force larger font for stars */
+    margin-right: 4px;
+    text-shadow: 0 0 2px black;
+}
+
+
+.ziwei-center {
+    grid-area: center;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    border: 1px dashed rgba(188, 140, 255, 0.1);
+}
+
+.center-content {
+    text-align: center;
+    color: #bc8cff;
+}
+
+/* Grid Area Assignments */
+.c-si {
+    grid-area: si;
+}
+
+.c-wu {
+    grid-area: wu;
+}
+
+.c-wei {
+    grid-area: wei;
+}
+
+.c-shen {
+    grid-area: shen;
+}
+
+.c-chen {
+    grid-area: chen;
+}
+
+.c-you {
+    grid-area: you;
+}
+
+.c-mao {
+    grid-area: mao;
+}
+
+.c-xu {
+    grid-area: xu;
+}
+
+.c-yin {
+    grid-area: yin;
+}
+
+.c-chou {
+    grid-area: chou;
+}
+
+.c-zi {
+    grid-area: zi;
+}
+
+.c-hai {
+    grid-area: hai;
+}
+
+/* Corner labels for Earthly Branches */
+.ziwei-cell::before {
+    content: attr(data-b);
+    /* Fallback if we just want simple english debug label, but likely we want chinese hardcoded or via JS */
+    position: absolute;
+    bottom: 2px;
+    right: 5px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.1);
+    text-transform: uppercase;
+    pointer-events: none;
 }

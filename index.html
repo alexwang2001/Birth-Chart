@@ -9,6 +9,7 @@
     <!-- Scripts loaded sequentially for non-module usage -->
     <script src="astro-data.js"></script>
     <script src="astro-core.js"></script>
+    <script src="ziwei-core.js"></script>
     <script src="astro-chart.js"></script>
 </head>
 
@@ -172,6 +173,8 @@
                 </div>
             </div>
 
+
+
             <div class="results-panel" id="results-list">
                 <!-- Results will be injected here -->
             </div>
@@ -180,6 +183,35 @@
                 <h3>相位列表 (Aspects)</h3>
                 <div class="aspect-grid" id="aspect-list">
                     <!-- Aspects will be injected here -->
+                </div>
+            </div>
+
+            <!-- Zi Wei Dou Shu Panel (Moved to Bottom) -->
+            <div class="results-panel" id="ziwei-results-list" style="margin-top: 2rem; grid-column: 1 / -1;">
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(157, 105, 255, 0.3); padding-bottom: 0.5rem;">
+                    <span style="font-size: 1.2rem;">🔮</span>
+                    <h3 style="color: #bc8cff; margin: 0;">紫微斗數命盤 (Zi Wei Dou Shu)</h3>
+                </div>
+
+                <div class="ziwei-grid-layout" id="ziwei-grid">
+                    <div class="ziwei-cell c-si" id="palace-si" data-b="si"></div>
+                    <div class="ziwei-cell c-wu" id="palace-wu" data-b="wu"></div>
+                    <div class="ziwei-cell c-wei" id="palace-wei" data-b="wei"></div>
+                    <div class="ziwei-cell c-shen" id="palace-shen" data-b="shen"></div>
+
+                    <div class="ziwei-cell c-chen" id="palace-chen" data-b="chen"></div>
+                    <div class="ziwei-center">
+                    </div>
+                    <div class="ziwei-cell c-you" id="palace-you" data-b="you"></div>
+
+                    <div class="ziwei-cell c-mao" id="palace-mao" data-b="mao"></div>
+                    <div class="ziwei-cell c-xu" id="palace-xu" data-b="xu"></div>
+
+                    <div class="ziwei-cell c-yin" id="palace-yin" data-b="yin"></div>
+                    <div class="ziwei-cell c-chou" id="palace-chou" data-b="chou"></div>
+                    <div class="ziwei-cell c-zi" id="palace-zi" data-b="zi"></div>
+                    <div class="ziwei-cell c-hai" id="palace-hai" data-b="hai"></div>
                 </div>
             </div>
     </main>

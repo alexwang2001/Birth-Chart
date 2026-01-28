@@ -215,7 +215,103 @@ function showTransitInterpretation(planet, houseIdx) {
     modal.style.display = 'flex';
 }
 
-// --- Sync Logic ---
+
+
+function showZiWeiInterpretation(palace) {
+    const modal = document.getElementById('modal-overlay');
+    document.getElementById('modal-icon').textContent = palace.branch;
+    document.getElementById('modal-icon').style.color = '#bc8cff';
+    document.getElementById('modal-title').textContent = `${palace.stem}${palace.branch} ${palace.name}`;
+    document.getElementById('modal-title').style.color = '#bc8cff';
+    document.getElementById('modal-subtitle').textContent = "ZI WEI PALACE DETAILS";
+
+    // 1. Stars List format
+    let starsHtml = '';
+    if (palace.stars.length > 0) {
+        starsHtml = palace.stars.map(star =>
+            `<span style="color:${star.color}; margin-right: 12px; font-weight:bold; font-size:1.3rem; text-shadow: 0 0 5px rgba(0,0,0,0.5);">${star.name}</span>`
+        ).join('');
+    } else {
+        starsHtml = '<span style="color: var(--text-dim); font-style:italic;">無主星 (Empty Palace) - 請參考對宮星曜</span>';
+    }
+
+    // 2. Palace Meanings (Detailed)
+    const palaceMeanings = {
+        "命宮": "命宮是命盤的核心，代表你的先天個性、天賦才華、以及整體的行運特質。它顯示了你『是什麼樣的人』，以及你最重要的核心價值觀。命宮強勢的人，通常自主性強，能掌握自己的命運；命宮弱勢則較易受環境影響。",
+        "兄弟": "兄弟宮代表你與兄弟姊妹、知心好友、合作夥伴的關係。在現代社會，它也深深影響著現金流動與儲蓄能力（作為財帛宮的田宅位）。此宮位良好，代表能得手足之助或累積財富。",
+        "夫妻": "夫妻宮顯示了你對感情的態度、配偶的個性特質，以及婚姻生活的樣貌。它也能反映出你喜歡的異性類型。此宮位若有吉星，感情生活較順遂；若有煞星，可能經歷波折或需要更多經營。",
+        "子女": "子女宮代表與子女的緣分、互動方式及教育觀念。廣義來說，它也代表晚輩緣、桃花運（性生活）、以及合夥生意（股東）。此宮位活躍的人，通常充滿創造力，也較容易招蜂引蝶。",
+        "財帛": "財帛宮掌管你的理財能力、賺錢模式、以及對金錢的價值觀。它代表『現金』的進出狀況。有財星坐守者，通常對數字敏感，賺錢機會多；若逢煞星，則可能財來財去，需注意守財。",
+        "疾厄": "疾厄宮代表你的先天體質、易患疾病的部位、以及潛意識的健康狀態。它也代表『家運』（田宅的氣數位）和工作場所的環境。此宮位主要用來評估身心健康與抗壓能力。",
+        "遷移": "遷移宮代表你外出發展的際遇、社交能力、以及給人的第一印象。它是命宮的對宮，深深影響著你的外在表現與人際關係。此宮位吉利者，適合出外發展，易得貴人相助。",
+        "交友": "交友宮（奴僕宮）代表你與朋友、部屬、粉絲、群眾的關係。它反映了你的領導統御能力與人氣指數。在現代社會，這個宮位對於公眾人物、業務人員或領導者特別重要。",
+        "官祿": "官祿宮（事業宮）代表你的工作態度、創業能力、學業表現、以及職位升遷運勢。它與財帛宮（賺錢能力）和命宮（個性）息息相關，構成『三方四正』。此宮強者，事業心重，成就慾強。",
+        "田宅": "田宅宮代表你的居住環境、不動產運勢、家庭生活氛圍，以及最終的財富累積（庫存）。它也象徵著家族的興衰。此宮位穩定者，容易置產，家庭生活安穩，晚年運佳。",
+        "福德": "福德宮代表你的精神享受、內心世界、興趣嗜好、以及『福氣』的厚薄。它也影響著你的財源（財帛的對宮）與投資運。此宮位好的人，懂得生活情趣，抗壓性高，心態樂觀。",
+        "父母": "父母宮代表你與父母長輩的關係、遺傳基因、以及受長輩提攜的機會。廣義來說，它也代表文書、學歷、以及與政府機構的關係。此宮位吉利，易得長輩疼愛與遺產。"
+    };
+
+    // 3. Star Meanings (Detailed)
+    const starMeanings = {
+        "紫微": "【帝王之星】尊貴、領導力強、耳根子軟。紫微星坐守，象徵你有領袖氣質，但可能較為獨斷或愛面子。適合擔任管理職或創業。",
+        "天機": "【智慧之星】聰明、反應快、善於謀略。天機星坐守，代表你足智多謀，適應力強，但可能較容易神經質或思慮過度。適合企劃、幕僚工作。",
+        "太陽": "【權貴之星】博愛、熱情、光明磊落。太陽星坐守，象徵你為人慷慨，樂於助人，有公益精神。太陽在旺宮（白天）更顯貴氣，陷落（夜晚）則較勞心勞力。",
+        "武曲": "【財富之星】剛毅、果斷、執行力強。武曲星是正財星，坐守代表你對金錢敏感，務實肯幹。個性上可能較嚴肅或不解風情，但絕不拖泥帶水。",
+        "天同": "【福氣之星】溫順、隨和、重視享受。天同星坐守，代表你福氣深厚，不喜與人爭執，有點孩子氣。雖然較缺乏開創力，但貴人運佳，生活安逸。",
+        "廉貞": "【交際之星】複雜、桃花、是非分明。廉貞星坐守，代表你公關能力強，性格多變，既可是嚴格的執法者，也可是風流的才子。能量較難駕馭，好壞起伏大。",
+        "天府": "【庫藏之星】穩重、保守、包容力強。天府星是南斗帝王，也是財庫星。坐守代表你個性寬厚，善於守成與理財，重視面子與排場，衣食無憂。",
+        "太陰": "【富足之星】溫柔、細膩、重視情感。太陰星是田宅主，也是財星。坐守代表你心思細膩，有潔癖，重視家庭。在旺宮（夜晚）象徵財富豐盈，陷落則較操勞。",
+        "貪狼": "【慾望之星】多才多藝、長袖善舞、投機。貪狼星是第一大桃花星，坐守代表你交際手腕高超，好勝心強，對新奇事物充滿好奇。適合演藝、公關或冒險投機。",
+        "巨門": "【是非之星】多疑、口才佳、善於分析。巨門星坐守，代表你觀察力敏銳，能言善道，但容易犯口舌是非。適合從事律師、講師、評論員等靠嘴巴吃飯的行業。",
+        "天相": "【印鑑之星】公正、熱心、輔佐能力強。天相星是宰相之星，坐守代表你儀表端莊，誠懇踏實，喜歡打抱不平。缺乏主見，易受環境影響，是很好的幕僚人才。",
+        "天梁": "【蔭佑之星】成熟、正直、逢凶化吉。天梁星是老人星，坐守代表你早熟穩重，喜歡照顧人，有老大風範。雖然人生難免遇難關，但總能化險為夷。",
+        "七殺": "【將帥之星】剛烈、衝動、勇往直前。七殺星坐守，代表你性格剛強，不畏艱難，喜歡獨當一面。人生變動大，大起大落，適合軍警、外科醫生或開創型事業。",
+        "破軍": "【耗損之星】破壞、創新、反覆無常。破軍星坐守，代表你不按牌理出牌，喜歡破舊立新。人生充滿戲劇性變化，為了理想不惜孤注一擲，是標準的革命家。"
+    };
+
+    // Calculate dynamic content about star meanings in this specific palace
+    let starDescriptionsHtml = "";
+    if (palace.stars.length > 0) {
+        starDescriptionsHtml = '<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">';
+        palace.stars.forEach(star => {
+            const desc = starMeanings[star.name] || "具備特殊的宇宙能量。";
+            starDescriptionsHtml += `
+            <div style="margin-bottom: 0.8rem;">
+                <span style="color:${star.color}; font-weight:bold;">● ${star.name}：</span>
+                <span style="color: var(--text-light);">${desc}</span>
+            </div>`;
+        });
+        starDescriptionsHtml += '</div>';
+    }
+
+    const content = `
+        <div class="interpretation-section">
+            <h3>宮位主星</h3>
+            <div style="margin-bottom:0.5rem;">${starsHtml}</div>
+            ${starDescriptionsHtml}
+        </div>
+        <div class="interpretation-section">
+            <h3 style="color: #bc8cff;">${palace.name}的深層意涵</h3>
+            <p style="line-height: 1.6; font-size: 1.05rem;">${palaceMeanings[palace.name] || "此宮位主要影響您人生的特定領域。"}</p>
+        </div>
+        <div class="interpretation-section">
+            <h3>命盤格局</h3>
+            <p>
+                <strong>【${palace.stem}${palace.branch}宮】</strong>位況：<br>
+                ${palace.isMing ? '<span style="color:#ff5f5f; font-weight:bold; display:block; margin: 4px 0;">★ 命宮（Life Palace）：</span>這是您命運的總指揮部。您的性格傾向、外在行為模式、以及一生的成敗關鍵都顯現於此。' : ""}
+                ${palace.isShen ? '<span style="color:#ffff70; font-weight:bold; display:block; margin: 4px 0;">★ 身宮（Body Palace）：</span>這是您中晚年運勢的重點。它代表了您後天努力的方向，以及您最執著、最重視的人生領域。' : ""}
+                ${!palace.isMing && !palace.isShen ? '此宮位在三方四正架構中扮演輔助或特定的角色，隨著十干四化的引動，將在不同流年產生具體的吉凶克應。' : ""}
+            </p>
+        </div>
+    `;
+
+    const container = document.querySelector('.interpretation-text');
+    if (container) container.innerHTML = content;
+
+    modal.style.display = 'flex';
+}
+
+
 function syncTransitToNow() {
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
@@ -617,6 +713,64 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
             document.getElementById('transit-results-list').style.display = 'none';
         }
         updateResults(planetPositionsRefined, houseData);
+
+        // Zi Wei Dou Shu Calculation and Rendering
+        const zwData = ZiWei.calculate(date, parseInt(hh));
+        if (zwData) {
+            document.getElementById('ziwei-results-list').style.display = 'block';
+
+            // Update Center Info
+            // Update Center Info (Removed per user request)
+            /*
+            const centerInfo = document.getElementById('ziwei-info');
+            if (centerInfo) {
+                const lunar = zwData.lunar;
+                centerInfo.innerHTML = `
+                    <div style="margin-bottom:0.3rem">農曆 ${lunar.year}年${lunar.isLeap ? "閏" : ""}${lunar.month}月${lunar.day}日</div>
+                    <div style="font-weight:bold; color:var(--text-white)">${zwData.bureauName}</div>
+                `;
+            }
+            */
+
+            // Render Palaces
+            zwData.palaces.forEach((palace, i) => { // i is position index 0-11 (Zi to Hai)
+                // Map position index to DOM ID
+                // 0->zi, 1->chou... 
+                const branches = ["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"];
+                const elId = `palace-${branches[i]}`;
+                const el = document.getElementById(elId);
+                if (el) {
+                    let html = `<div class="palace-header" style="position: absolute; top:5px; right:5px; opacity:0.3; font-size:1.5rem; font-weight:900;">${palace.branch}</div>
+                                 <div style="position: absolute; bottom:5px; right:5px; opacity:0.5; font-size:0.8rem;">${palace.name}</div>
+                                 <div style="position: absolute; top:5px; left:5px; color: ${palace.isMing ? '#ff5f5f' : (palace.isShen ? '#ffff70' : '#8b949e')}; font-weight:bold; font-size: 1rem;">
+                                    ${palace.stem}
+                                    ${palace.isMing ? '<span style="border:1px solid #ff5f5f; border-radius:4px; padding:0 2px; font-size:0.7rem; margin-left:2px;">命</span>' : ''}
+                                    ${palace.isShen ? '<span style="border:1px solid #ffff70; border-radius:4px; padding:0 2px; font-size:0.7rem; margin-left:2px;">身</span>' : ''}
+                                 </div>
+                                 <div class="stars-container" style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 8px;">`;
+
+                    // Sort stars by offset/importance if needed, or just standard
+                    palace.stars.forEach(star => {
+                        html += `<span style="color:${star.color}; font-weight:bold; font-size:1.2rem; text-shadow: 0 0 2px rgba(0,0,0,0.8);">${star.name}</span>`;
+                    });
+
+                    html += `</div>`;
+                    el.innerHTML = html;
+                    el.style.cursor = 'pointer';
+                    el.onclick = () => showZiWeiInterpretation(palace);
+
+                    // Highlight Ming Palace
+                    if (palace.isMing) {
+                        el.style.background = 'rgba(255, 95, 95, 0.1)';
+                        el.style.border = '1px solid rgba(255, 95, 95, 0.3)';
+                    } else {
+                        el.style.background = ''; // reset
+                        el.style.border = '';
+                    }
+                }
+            });
+        }
+
 
         // Save to history
         const isManual = document.getElementById('manual-coords-toggle').checked;
