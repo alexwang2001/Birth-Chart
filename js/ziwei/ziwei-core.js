@@ -64,12 +64,12 @@ const ZiWei = (function () {
      * Placed counter-clockwise from Zi Wei position
      */
     const ZI_WEI_STARS = [
-        { id: "ZiWei", name: "紫微", color: "#bc8cff", offset: 0 },
-        { id: "TianJi", name: "天機", color: "#69ff8c", offset: -1 },
-        { id: "TaiYang", name: "太陽", color: "#ff5f5f", offset: -3 },
-        { id: "WuQu", name: "武曲", color: "#e1e1e1", offset: -4 },
-        { id: "TianTong", name: "天同", color: "#ffff70", offset: -5 },
-        { id: "LianZhen", name: "廉貞", color: "#ff5f5f", offset: -8 }
+        { id: "ZiWei", name: "紫微", color: "#bc8cff", offset: 0, type: "major" },
+        { id: "TianJi", name: "天機", color: "#69ff8c", offset: -1, type: "major" },
+        { id: "TaiYang", name: "太陽", color: "#ff5f5f", offset: -3, type: "major" },
+        { id: "WuQu", name: "武曲", color: "#e1e1e1", offset: -4, type: "major" },
+        { id: "TianTong", name: "天同", color: "#ffff70", offset: -5, type: "major" },
+        { id: "LianZhen", name: "廉貞", color: "#ff5f5f", offset: -8, type: "major" }
     ];
 
     /**
@@ -77,14 +77,14 @@ const ZiWei = (function () {
      * Placed clockwise from Tian Fu position
      */
     const TIAN_FU_STARS = [
-        { id: "TianFu", name: "天府", color: "#e6c27a", offset: 0 },
-        { id: "TaiYin", name: "太陰", color: "#5fafff", offset: 1 },
-        { id: "TanLang", name: "貪狼", color: "#69ff8c", offset: 2 },
-        { id: "JuMen", name: "巨門", color: "#e1e1e1", offset: 3 },
-        { id: "TianXiang", name: "天相", color: "#e6c27a", offset: 4 },
-        { id: "TianLiang", name: "天梁", color: "#69ff8c", offset: 5 },
-        { id: "QiSha", name: "七殺", color: "#ff5f5f", offset: 6 },
-        { id: "PoJun", name: "破軍", color: "#5fafff", offset: 10 }
+        { id: "TianFu", name: "天府", color: "#e6c27a", offset: 0, type: "major" },
+        { id: "TaiYin", name: "太陰", color: "#5fafff", offset: 1, type: "major" },
+        { id: "TanLang", name: "貪狼", color: "#69ff8c", offset: 2, type: "major" },
+        { id: "JuMen", name: "巨門", color: "#e1e1e1", offset: 3, type: "major" },
+        { id: "TianXiang", name: "天相", color: "#e6c27a", offset: 4, type: "major" },
+        { id: "TianLiang", name: "天梁", color: "#69ff8c", offset: 5, type: "major" },
+        { id: "QiSha", name: "七殺", color: "#ff5f5f", offset: 6, type: "major" },
+        { id: "PoJun", name: "破軍", color: "#5fafff", offset: 10, type: "major" }
     ];
 
     const LUNAR_BASE_DATE = new Date(1900, 0, 31);
@@ -372,8 +372,12 @@ const ZiWei = (function () {
      * @param {Array} palaces - Palace array
      * @param {number} ziWeiPos - Zi Wei position
      * @param {number} tianFuPos - Tian Fu position
+     * @param {Object} lunar - Lunar date object
+     * @param {number} hourBranch - Birth hour branch
+     * @param {number} yearStem - Year stem index
+     * @param {number} yearBranch - Year branch index
      */
-    function placeStars(palaces, ziWeiPos, tianFuPos) {
+    function placeStars(palaces, ziWeiPos, tianFuPos, lunar, hourBranch, yearStem, yearBranch) {
         // Place Zi Wei group
         ZI_WEI_STARS.forEach(star => {
             let pos = (ziWeiPos + star.offset) % 12;
@@ -387,6 +391,81 @@ const ZiWei = (function () {
             if (pos < 0) pos += 12;
             palaces[pos].stars.push(star);
         });
+
+        // --- Place 6 Lucky Stars ---
+
+        // 1. Zuo Fu / You Bi (Month based)
+        // Zuo Fu: Start Chen(4), clockwise
+        let zuoFuPos = (4 + (lunar.month - 1)) % 12;
+        palaces[zuoFuPos].stars.push({ id: "ZuoFu", name: "左輔", color: "#69ff8c", type: "lucky" });
+        // You Bi: Start Xu(10), counter-clockwise
+        let youBiPos = (10 - (lunar.month - 1)) % 12;
+        if (youBiPos < 0) youBiPos += 12;
+        palaces[youBiPos].stars.push({ id: "YouBi", name: "右弼", color: "#69ff8c", type: "lucky" });
+
+        // 2. Wen Chang / Wen Qu (Hour based)
+        // Wen Chang: Start Xu(10), counter-clockwise
+        let wenChangPos = (10 - hourBranch) % 12;
+        if (wenChangPos < 0) wenChangPos += 12;
+        palaces[wenChangPos].stars.push({ id: "WenChang", name: "文昌", color: "#ffff70", type: "lucky" });
+        // Wen Qu: Start Chen(4), clockwise
+        let wenQuPos = (4 + hourBranch) % 12;
+        palaces[wenQuPos].stars.push({ id: "WenQu", name: "文曲", color: "#ffff70", type: "lucky" });
+
+        // 3. Tian Kui / Tian Yue (Year Stem based)
+        let kuiPos, yuePos;
+        switch (yearStem) {
+            case 0: case 4: case 6: // 甲戊庚
+                kuiPos = 1; yuePos = 7; break;
+            case 1: case 5: // 乙己
+                kuiPos = 0; yuePos = 8; break;
+            case 2: case 3: // 丙丁
+                kuiPos = 11; yuePos = 9; break;
+            case 8: case 9: // 壬癸
+                kuiPos = 5; yuePos = 3; break;
+            case 7: // 辛
+                kuiPos = 6; yuePos = 2; break;
+            default: kuiPos = 0; yuePos = 0;
+        }
+        palaces[kuiPos].stars.push({ id: "TianKui", name: "天魁", color: "#e6c27a", type: "lucky" });
+        palaces[yuePos].stars.push({ id: "TianYue", name: "天鉞", color: "#e6c27a", type: "lucky" });
+
+        // --- Place 6 Ominous Stars ---
+
+        // 1. Qing Yang / Tuo Luo (Lu Cun based)
+        let luCunPos;
+        const luCunMap = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0]; // 甲乙丙丁戊己庚辛壬癸
+        luCunPos = luCunMap[yearStem];
+
+        let qingYangPos = (luCunPos + 1) % 12;
+        let tuoLuoPos = (luCunPos - 1) % 12;
+        if (tuoLuoPos < 0) tuoLuoPos += 12;
+
+        palaces[qingYangPos].stars.push({ id: "QingYang", name: "擎羊", color: "#ff5f5f", type: "ominous" });
+        palaces[tuoLuoPos].stars.push({ id: "TuoLuo", name: "陀羅", color: "#ff5f5f", type: "ominous" });
+
+        // 2. Huo Xing / Ling Xing (Year Branch + Hour)
+        let huoStart, lingStart;
+        // Yin(2) Wu(6) Xu(10) -> Huo Yin(2), Ling Xu(10)
+        // Shen(8) Zi(0) Chen(4) -> Huo Yin(2), Ling Xu(10)
+        // Si(5) You(9) Chou(1) -> Huo Mao(3), Ling Xu(10)
+        // Hai(11) Mao(3) Wei(7) -> Huo You(9), Ling Xu(10)
+        if ([2, 6, 10].includes(yearBranch)) { huoStart = 2; lingStart = 10; }
+        else if ([8, 0, 4].includes(yearBranch)) { huoStart = 2; lingStart = 10; }
+        else if ([5, 9, 1].includes(yearBranch)) { huoStart = 3; lingStart = 10; }
+        else { huoStart = 9; lingStart = 10; }
+
+        let huoPos = (huoStart + hourBranch) % 12;
+        let lingPos = (lingStart + hourBranch) % 12;
+        palaces[huoPos].stars.push({ id: "HuoXing", name: "火星", color: "#ff5f5f", type: "ominous" });
+        palaces[lingPos].stars.push({ id: "LingXing", name: "鈴星", color: "#ff5f5f", type: "ominous" });
+
+        // 3. Di Kong / Di Jie (Hour based)
+        let diKongPos = (11 - hourBranch) % 12;
+        if (diKongPos < 0) diKongPos += 12;
+        let diJiePos = (11 + hourBranch) % 12;
+        palaces[diKongPos].stars.push({ id: "DiKong", name: "地空", color: "#bc8cff", type: "ominous" });
+        palaces[diJiePos].stars.push({ id: "DiJie", name: "地劫", color: "#bc8cff", type: "ominous" });
     }
 
     // ============================================================================
@@ -426,7 +505,7 @@ const ZiWei = (function () {
         const tianFuPos = calculateTianFuPosition(ziWeiPos);
 
         // Step 7: Place stars
-        placeStars(palaces, ziWeiPos, tianFuPos);
+        placeStars(palaces, ziWeiPos, tianFuPos, lunar, birthHourBranch, yearStemIdx, yearBranchIdx);
 
         // Step 8: Return complete chart data
         return {

@@ -266,18 +266,41 @@ function showZiWeiInterpretation(palace) {
         "天相": "【印鑑之星】公正、熱心、輔佐能力強。天相星是宰相之星，坐守代表你儀表端莊，誠懇踏實，喜歡打抱不平。缺乏主見，易受環境影響，是很好的幕僚人才。",
         "天梁": "【蔭佑之星】成熟、正直、逢凶化吉。天梁星是老人星，坐守代表你早熟穩重，喜歡照顧人，有老大風範。雖然人生難免遇難關，但總能化險為夷。",
         "七殺": "【將帥之星】剛烈、衝動、勇往直前。七殺星坐守，代表你性格剛強，不畏艱難，喜歡獨當一面。人生變動大，大起大落，適合軍警、外科醫生或開創型事業。",
-        "破軍": "【耗損之星】破壞、創新、反覆無常。破軍星坐守，代表你不按牌理出牌，喜歡破舊立新。人生充滿戲劇性變化，為了理想不惜孤注一擲，是標準的革命家。"
+        "破軍": "【耗損之星】破壞、創新、反覆無常。破軍星坐守，代表你不按牌理出牌，喜歡破舊立新。人生充滿戲劇性變化，為了理想不惜孤注一擲，是標準的革命家。",
+        "左輔": "【助力之星】代表平輩、同級的外部助力。坐守此宮，能增強其穩定性與成功機率，增加格局的層次。",
+        "右弼": "【助力之星】代表異性、多元的助力。主機智圓融，能加強人際溝通，為命主帶來轉機與協調空間。",
+        "文昌": "【文藝之星】代表正統、學術性的才華。主功名、證照、契約，性格上顯得文雅、有條理且重視邏輯。",
+        "文曲": "【才藝之星】代表異路、感性方面的才華。主口才、藝術思維、直覺，性格上較浪漫、不拘小節。",
+        "天魁": "【貴人之星】代表陽貴人，明顯的提攜。能在你主動爭取時，獲得前輩或長輩直接的幫助與機會。",
+        "天鉞": "【貴人之星】代表陰貴人，暗中的助力。在危難時刻常有貴人出現化解危機，也主女性長輩的提攜。",
+        "擎羊": "【刑煞之星】代表剛烈、衝動與開創力。雖有進取心，但容易引發衝突、意外或身體受傷，屬勞碌命格。",
+        "陀羅": "【困頓之星】代表糾纏、延遲與磨練。象徵事情進展反覆，內心也容易糾結，但也利於長期深鑽某項技能。",
+        "火星": "【火暴之星】代表明處的爆發與傷害。性格急躁，能量釋放快速，主突發性的成功或破壞，難以持久穩定。",
+        "鈴星": "【冷冽之星】代表暗處的權謀與波折。性格悶騷固執，負能量較重，容易在暗中運作或遭受小人侵擾。",
+        "地空": "【空亡之星】代表精神性的孤寂與幻滅。容易產生得而復失的挫折感，利於宗教、玄學等形而上的發展。",
+        "地劫": "【耗損之星】代表物質性的劫財與變動。求財不穩，常有預料之外的支出，性格特立獨行，不走尋常路。"
     };
 
     // Calculate dynamic content about star meanings in this specific palace
     let starDescriptionsHtml = "";
     if (palace.stars.length > 0) {
         starDescriptionsHtml = '<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">';
-        palace.stars.forEach(star => {
+        // Sort stars by significance: Major > Lucky > Ominous
+        const sortedStars = [...palace.stars].sort((a, b) => {
+            const order = { "major": 1, "lucky": 2, "ominous": 3 };
+            return (order[a.type] || 9) - (order[b.type] || 9);
+        });
+
+        sortedStars.forEach(star => {
             const desc = starMeanings[star.name] || "具備特殊的宇宙能量。";
+            let typeLabel = "";
+            let color = star.color;
+            if (star.type === "lucky") { typeLabel = " [吉]"; color = "#69ff8c"; }
+            if (star.type === "ominous") { typeLabel = " [煞]"; color = "#ff5f5f"; }
+
             starDescriptionsHtml += `
-            <div style="margin-bottom: 0.8rem;">
-                <span style="color:${star.color}; font-weight:bold;">● ${star.name}：</span>
+            <div style="margin-bottom: 0.8rem; border-left: 2px solid ${color}; padding-left: 10px;">
+                <span style="color:${color}; font-weight:bold;">${star.name}${typeLabel}：</span>
                 <span style="color: var(--text-light);">${desc}</span>
             </div>`;
         });
@@ -843,8 +866,17 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                     // We can also sort by color or fixed order if desired
 
                     let starsHtml = '';
-                    palace.stars.forEach(star => {
-                        starsHtml += `<span class="ziwei-star" style="color:${star.color}">${star.name}</span>`;
+                    const sortedStarsForGrid = [...palace.stars].sort((a, b) => {
+                        const order = { "major": 1, "lucky": 2, "ominous": 3 };
+                        return (order[a.type] || 9) - (order[b.type] || 9);
+                    });
+
+                    sortedStarsForGrid.forEach(star => {
+                        let className = "ziwei-star";
+                        if (star.type === "lucky") className += " star-lucky";
+                        if (star.type === "ominous") className += " star-ominous";
+
+                        starsHtml += `<span class="${className}" style="color:${star.color}">${star.name}</span>`;
                     });
 
                     el.innerHTML = `
