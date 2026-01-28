@@ -231,13 +231,21 @@ function showZiWeiInterpretation(palace) {
     subtitle.textContent = "紫微命盤詳解 (Zi Wei Palace Details)";
 
     const data = ZIWEI_DATA.INTERPRETATIONS;
+    const sihuaData = ZIWEI_DATA.SIHUA;
 
     // 1. Stars List format
     let starsHtml = '';
     if (palace.stars.length > 0) {
-        starsHtml = palace.stars.map(star =>
-            `<span style="color:${star.color}; margin-right: 12px; font-weight:bold; font-size:1.3rem; text-shadow: 0 0 5px rgba(0,0,0,0.5);">${star.name}</span>`
-        ).join('');
+        starsHtml = palace.stars.map(star => {
+            let sihuaTag = '';
+            if (star.sihua) {
+                const s = sihuaData.TYPES[star.sihua];
+                sihuaTag = `<span style="font-size:0.8rem; background:${s.color}; color:#000; padding:2px 4px; border-radius:3px; vertical-align:middle; margin-left:4px;">${s.symbol}</span>`;
+            }
+            return `<div style="display:inline-block; margin-right:15px; margin-bottom:10px;">
+                        <span style="color:${star.color}; font-weight:bold; font-size:1.4rem; text-shadow: 0 0 5px rgba(0,0,0,0.5);">${star.name}</span>${sihuaTag}
+                    </div>`;
+        }).join('');
     } else {
         starsHtml = '<span style="color: var(--text-dim); font-style:italic;">無主星 (Empty Palace) - 請參考對宮星曜</span>';
     }
@@ -247,7 +255,6 @@ function showZiWeiInterpretation(palace) {
     if (palace.stars.length > 0) {
         starDescriptionsHtml = '<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">';
 
-        // Sort stars by significance: Major > Lucky > Ominous
         const sortedStars = [...palace.stars].sort((a, b) => {
             const order = { "major": 1, "lucky": 2, "ominous": 3 };
             return (order[a.type] || 9) - (order[b.type] || 9);
@@ -255,16 +262,32 @@ function showZiWeiInterpretation(palace) {
 
         sortedStars.forEach(star => {
             const starData = data.stars[star.id] || data.stars[star.name];
-            const desc = starData ? `${starData.meaning} ${starData.description}` : "具備特殊的宇宙能量。";
+            let desc = starData ? `${starData.description}` : "具備特殊的宇宙能量。";
             let typeLabel = "";
             let color = star.color;
             if (star.type === "lucky") { typeLabel = " [吉]"; color = "#69ff8c"; }
             if (star.type === "ominous") { typeLabel = " [煞]"; color = "#ff5f5f"; }
 
+            let sihuaBlock = '';
+            if (star.sihua) {
+                const s = sihuaData.TYPES[star.sihua];
+                const sInterp = sihuaData.INTERPRETATIONS[star.sihua];
+                sihuaBlock = `
+                    <div style="margin-top: 5px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; border-left: 2px solid ${s.color};">
+                        <span style="color:${s.color}; font-weight:bold;">${s.name}：</span>
+                        <span style="font-size:0.9rem; color:#ccc;">${s.meaning}。${sInterp.inPalace[palace.name] || ""}</span>
+                    </div>
+                `;
+            }
+
             starDescriptionsHtml += `
-            <div style="margin-bottom: 0.8rem; border-left: 2px solid ${color}; padding-left: 12px;">
-                <div style="color:${color}; font-weight:bold; margin-bottom: 2px;">${star.name}${typeLabel}</div>
-                <div style="color: var(--text-light); font-size: 0.95rem; line-height: 1.5;">${desc}</div>
+            <div style="margin-bottom: 1.2rem; border-left: 2px solid ${color}; padding-left: 12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="color:${color}; font-weight:bold; font-size:1.1rem;">${star.name}${typeLabel}</span>
+                    ${starData ? `<small style="color:var(--text-dim);">${starData.meaning}</small>` : ''}
+                </div>
+                <div style="color: var(--text-light); font-size: 0.95rem; line-height: 1.5; margin-top:4px;">${desc}</div>
+                ${sihuaBlock}
             </div>`;
         });
         starDescriptionsHtml += '</div>';
@@ -272,8 +295,8 @@ function showZiWeiInterpretation(palace) {
 
     const content = `
         <div class="interpretation-section">
-            <h3>宮位主星 (Stars in Palace)</h3>
-            <div style="margin-bottom:1rem; padding: 0.5rem 0;">${starsHtml}</div>
+            <h3 style="margin-bottom:1rem;">宮位主星 (Stars in Palace)</h3>
+            <div style="margin-bottom:0.5rem;">${starsHtml}</div>
             ${starDescriptionsHtml}
         </div>
         <div class="interpretation-section" style="background: rgba(188, 140, 255, 0.05); padding: 1.2rem; border-radius: 8px; border: 1px solid rgba(188, 140, 255, 0.15);">
@@ -283,10 +306,11 @@ function showZiWeiInterpretation(palace) {
         <div class="interpretation-section">
             <h3>命盤地位 (Palace Status)</h3>
             <p style="line-height: 1.6;">
-                這是在您紫微命盤 12 宮位中的 <strong>【${palace.stem}${palace.branch}宮】</strong>。<br>
-                ${palace.isMing ? '<span style="color:#ff5f5f; font-weight:bold; display:block; margin: 8px 0; font-size: 1.1rem;">★ 命宮 (Life Palace)：</span>這是您命運的總指揮部。反映性格核心、天賦才能及一生運向。' : ""}
-                ${palace.isShen ? '<span style="color:#ffff70; font-weight:bold; display:block; margin: 8px 0; font-size: 1.1rem;">★ 身宮 (Body Palace)：</span>代表後天的執著點與中晚年的發展重心。' : ""}
-                ${!palace.isMing && !palace.isShen ? `在三方四正的架構中，${palace.name}提供了與生命領域相關的具體反饋。` : ""}
+                這是您命盤中的 <strong>【${palace.stem}${palace.branch}宮】</strong>。<br>
+                ${palace.isMing ? '<span style="color:#ff5f5f; font-weight:bold; display:block; margin: 8px 0; font-size: 1.1rem;">★ 命宮 (Life Palace)：</span>核心特質與一生總運。' : ""}
+                ${palace.isShen ? '<span style="color:#ffff70; font-weight:bold; display:block; margin: 8px 0; font-size: 1.1rem;">★ 身宮 (Body Palace)：</span>後天發展重心。' : ""}
+                ${palace.daxian ? `<span style="color:#69ff8c; font-weight:bold; display:block; margin: 8px 0;">◎ 當前大限 (${palace.daxian.ageRange})：</span>目前十年運勢的主導宮位。` : ""}
+                ${palace.liunian ? `<span style="color:#ff9933; font-weight:bold; display:block; margin: 8px 0;">◎ ${palace.liunian.year} 流年：</span>今年的運勢重點。` : ""}
             </p>
         </div>
     `;
@@ -381,16 +405,58 @@ function showHDInterpretation(category, value) {
                 <p style="font-size: 1.1rem; line-height: 1.6;">${desc || "這條通道代表了您生命中特定且穩定的能量流動方式。"}</p>
             </div>
             <div class="interpretation-section">
-                <p>通道連接著兩個能量中心，當一條通道被定義時，這兩個中心也會同時被定義（填色），展現出特定的天賦才華。</p>
+                <p>通道連帶著兩個能量中心，當一條通道被定義時，這兩個中心也會同時被定義（填色），展現出特定的天賦才華。</p>
             </div>
         `;
+    } else if (category === 'cross') {
+        const { name, type, quarter, gates } = value;
+        title.textContent = name;
+        subtitle.textContent = '輪迴交叉 (Incarnation Cross)';
+
+        const typeDesc = HD_INTERPRETATIONS.cross_types[type] || "";
+        const quarterDesc = HD_INTERPRETATIONS.quarters[quarter] || "";
+
+        content = `
+            <div class="interpretation-section">
+                <h3 style="color:#ff69b4;">您的核心使命</h3>
+                <p style="font-size: 1.1rem; line-height: 1.6;">輪迴交叉代表了您此生在世界上的核心運作方式與「人生基調」。這是由您出生圖中最重要的四個能量點（太陽/地球）所構成的。</p>
+            </div>
+            <div class="interpretation-section" style="background: rgba(255, 105, 180, 0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255, 105, 180, 0.2);">
+                <h3 style="color: #ff69b4;">運作幾何：${type}</h3>
+                <p style="line-height: 1.6;">${typeDesc}</p>
+            </div>
+            <div class="interpretation-section">
+                <h3 style="color: var(--text-gold);">生命季節：${quarter}</h3>
+                <p style="line-height: 1.6;">${quarterDesc}</p>
+            </div>
+            <div class="interpretation-section">
+                <h3>關鍵門戶 (Gates)</h3>
+                <p style="font-family: monospace; font-size: 1.1rem; color: #ccc;">${gates}</p>
+                <div style="font-size:0.85rem; color:var(--text-dim); margin-top:0.5rem;">
+                    (個性太陽 / 個性地球 | 設計太陽 / 設計地球)
+                </div>
+            </div>
+        `;
+    } else if (category === 'gate') {
+        const data = HD_INTERPRETATIONS.gates[value];
+        title.textContent = `閘門 ${value}：${data ? data.name : ''}`;
+        subtitle.textContent = '人類圖閘門 (Gate)';
+        if (data) {
+            content = `
+                <div class="interpretation-section">
+                    <h3 style="color:#ff69b4;">核心特質：${data.key}</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.6;">${data.desc}</p>
+                </div>
+                <div class="interpretation-section" style="margin-top:2rem; padding-top:1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <p style="font-size:0.9rem; color:var(--text-dim);">閘門是您命盤中特定能量的出口。當閘門所在的中心被定義，或者與對向閘門接通形成通道時，這股力量將以更穩定、更具影響力的方式展現。</p>
+                </div>
+            `;
+        }
     }
 
     if (container) container.innerHTML = content;
     modal.style.display = 'flex';
 }
-
-
 
 function syncTransitToNow() {
     const now = new Date();
@@ -795,37 +861,66 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
         updateResults(planetPositionsRefined, houseData);
 
         // Zi Wei Dou Shu Calculation and Rendering
+        const gender = document.getElementById('gender').value;
+        const queryYear = parseInt(document.getElementById('query-year').value) || 2026;
         const zwData = ZiWei.calculate(date, parseInt(hh));
+
         if (zwData) {
             document.getElementById('ziwei-results-list').style.display = 'block';
+
+            // Calculate Daxian and Liunian
+            const birthYear = new Date(date).getFullYear();
+            const age = queryYear - birthYear + 1; // 虛歲
+            const isClockwise = ZiWei.isDaxianClockwise(zwData.yearStem, gender);
+            const daxian = ZiWei.calculateDaxian(age, zwData.bureau, zwData.mingPos, isClockwise);
+            const liunian = ZiWei.calculateLiunian(queryYear);
+
+            // Update Palaces with Period info
+            zwData.palaces[daxian.palaceIndex].daxian = daxian;
+            zwData.palaces[liunian.branchIndex].liunian = { ...liunian, year: queryYear };
 
             // Update Center Info
             const centerDiv = document.querySelector('.ziwei-center');
             if (centerDiv) {
                 const lunar = zwData.lunar;
+                const daxianPalace = zwData.palaces[daxian.palaceIndex];
+                const liunianPalace = zwData.palaces[liunian.branchIndex];
+
                 centerDiv.innerHTML = `
                     <div class="ziwei-center-content">
                         <div class="center-title">紫微斗數</div>
                         <div class="center-info">
-                            <div>農曆 ${lunar.year} 年 ${lunar.isLeap ? "閏" : ""}${lunar.month} 月 ${lunar.day} 日</div>
-                            <div class="bureau-tag">${zwData.bureauName}</div>
-                            <div>陽曆 ${date} / ${hh}時</div>
+                            <div style="color:var(--text-gold); font-size:0.9rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px; margin-bottom:5px;">
+                                農曆 ${lunar.year}(${zwData.palaces[zwData.yearBranch].branch})年 ${lunar.isLeap ? "閏" : ""}${lunar.month}月${lunar.day}日
+                            </div>
+                            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
+                                <span class="bureau-tag">${zwData.bureauName}</span>
+                                <span class="bureau-tag" style="background:rgba(105,255,140,0.1); color:#69ff8c; border-color:#69ff8c;">${gender === 'male' ? '乾造' : '坤造'}</span>
+                            </div>
+                            
+                            <!-- Period Info -->
+                            <div class="period-status" style="text-align:left; font-size:0.85rem; background:rgba(255,255,255,0.03); padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <span style="color:#69ff8c;">當前大限：</span>
+                                    <span style="color:#fff;">${daxianPalace.name} (${daxian.ageRange})</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span style="color:#ff9933;">${queryYear}流年：</span>
+                                    <span style="color:#fff;">${liunianPalace.name}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
             }
 
             // Render Palaces
-            zwData.palaces.forEach((palace, i) => { // i is position index 0-11 (Zi to Hai)
-                // Map position index to DOM ID
+            zwData.palaces.forEach((palace, i) => {
                 const branches = ["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"];
                 const elId = `palace-${branches[i]}`;
                 const el = document.getElementById(elId);
 
                 if (el) {
-                    // Sort stars: Major > Minor (currently only major)
-                    // We can also sort by color or fixed order if desired
-
                     let starsHtml = '';
                     const sortedStarsForGrid = [...palace.stars].sort((a, b) => {
                         const order = { "major": 1, "lucky": 2, "ominous": 3 };
@@ -837,8 +932,19 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                         if (star.type === "lucky") className += " star-lucky";
                         if (star.type === "ominous") className += " star-ominous";
 
-                        starsHtml += `<span class="${className}" style="color:${star.color}">${star.name}</span>`;
+                        let sihuaTag = '';
+                        if (star.sihua) {
+                            const s = ZIWEI_DATA.SIHUA.TYPES[star.sihua];
+                            sihuaTag = `<span class="sihua-marker" style="background:${s.color}">${s.symbol}</span>`;
+                        }
+
+                        starsHtml += `<span class="${className}" style="color:${star.color}">${star.name}${sihuaTag}</span>`;
                     });
+
+                    // Period Markers
+                    let periodMarkers = '';
+                    if (palace.daxian) periodMarkers += '<span class="period-marker daxian-tag">限</span>';
+                    if (palace.liunian) periodMarkers += '<span class="period-marker liunian-tag">流</span>';
 
                     el.innerHTML = `
                         <div class="ziwei-bg-branch">${palace.branch}</div>
@@ -847,27 +953,29 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                             <div class="ziwei-markers">
                                 ${palace.isMing ? '<span class="ziwei-marker marker-ming">命</span>' : ''}
                                 ${palace.isShen ? '<span class="ziwei-marker marker-shen">身</span>' : ''}
+                                ${periodMarkers}
                             </div>
                         </div>
                         <div class="ziwei-stars">
                             ${starsHtml}
                         </div>
-                        <div class="ziwei-palace-name">${palace.name}</div>
+                        <div class="ziwei-palace-name" style="${palace.daxian ? 'color:#69ff8c;' : (palace.liunian ? 'color:#ff9933;' : '')}">${palace.name}</div>
                     `;
 
-                    // Interaction
                     el.style.cursor = 'pointer';
                     el.onclick = () => showZiWeiInterpretation(palace);
 
-                    // Add Ming Palace Halo Effect (Optional JS override, though CSS handles hover)
+                    // Add Highlighting
+                    el.classList.remove('active-daxian', 'active-liunian');
+                    if (palace.daxian) el.classList.add('active-daxian');
+                    if (palace.liunian) el.classList.add('active-liunian');
+
                     if (palace.isMing) {
-                        el.style.boxShadow = 'inset 0 0 20px rgba(255, 95, 95, 0.1)';
-                        el.style.borderColor = 'rgba(255, 95, 95, 0.3)';
-                    } else if (palace.isShen) {
-                        el.style.borderColor = 'rgba(255, 255, 112, 0.3)';
+                        el.style.boxShadow = 'inset 0 0 20px rgba(255, 95, 95, 0.15)';
+                        el.style.borderColor = 'rgba(255, 95, 95, 0.4)';
                     } else {
                         el.style.boxShadow = '';
-                        el.style.borderColor = ''; // Let CSS take over
+                        el.style.borderColor = '';
                     }
                 }
             });
@@ -893,7 +1001,7 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
 
             // 0. Circuitry & Cross Calculation
             const circuitry = calcCircuitry(hdData);
-            const crossName = getIncarnationCross(hdData);
+            const crossData = getIncarnationCross(hdData);
 
             // 1. Summary Cards
             const summaryDiv = document.getElementById('hd-summary');
@@ -910,9 +1018,10 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                     <div class="hd-card-label">內在權威 (Authority)</div>
                     <div class="hd-card-value" style="font-size:1.1rem; color:#69ff8c;">${hdData.authority}</div>
                 </div>
-                <div class="hd-card" style="grid-column: 1 / -1; align-items: flex-start; text-align: left;">
+                <div class="hd-card" style="grid-column: 1 / -1; align-items: flex-start; text-align: left; cursor:pointer;" onclick="showHDInterpretation('cross', {name:'${crossData.fullName}', type:'${crossData.type}', quarter:'${crossData.quarter}', gates:'${crossData.gates}'})">
                     <div class="hd-card-label">輪迴交叉 (Incarnation Cross)</div>
-                    <div class="hd-card-value" style="font-size:1.2rem; color:var(--text-gold);">${crossName}</div>
+                    <div class="hd-card-value" style="font-size:1.2rem; color:var(--text-gold);">${crossData.fullName}</div>
+                    <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:4px;">${crossData.gates}</div>
                 </div>
                 <div class="hd-card" style="grid-column: 1 / -1; align-items: flex-start;">
                     <div class="hd-card-label">迴路分析 (Circuitry Analysis)</div>
@@ -1019,7 +1128,7 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
 
             hdData.personality.forEach(p => {
                 const pName = hdPlanetNames[p.id] || p.id;
-                pCol += `<div class="hd-planet-row">
+                pCol += `<div class="hd-planet-row" style="cursor:pointer;" onclick="showHDInterpretation('gate', ${p.gate})">
                     <span style="color:#ccc;">${pName}</span>
                     <span style="font-family:monospace; font-weight:bold;">${p.gate}.${p.line}</span>
                  </div>`;
@@ -1034,7 +1143,7 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
 
             hdData.design.forEach(d => {
                 const dName = hdPlanetNames[d.id] || d.id;
-                dCol += `<div class="hd-planet-row">
+                dCol += `<div class="hd-planet-row" style="cursor:pointer;" onclick="showHDInterpretation('gate', ${d.gate})">
                     <span style="color:#ccc;">${dName}</span>
                     <span style="font-family:monospace; font-weight:bold; color:#ff5f5f;">${d.gate}.${d.line}</span>
                  </div>`;
@@ -1503,19 +1612,37 @@ function getIncarnationCross(hdData) {
     const dSun = hdData.design.find(p => p.id === 'Sun').gate;
     const dEarth = hdData.design.find(p => p.id === 'Earth').gate;
 
-    // Simplified Cross Name Table (Major ones)
-    const crossNames = {
-        1: '創新 (Infection)', 2: '方向 (Direction)', 3: '解釋 (Explanation)', 4: '規律 (Formulation)',
-        // ... this is very long, normally we'd have a full DB. 
-        // For now, return a generic name with gates
-    };
-
     const profile = hdData.profile.split(' ')[0]; // e.g. "1/3"
     let type = "右角 (Right Angle)";
     if (["5/1", "5/2", "6/2", "6/3"].includes(profile)) type = "左角 (Left Angle)";
     if (profile === "4/1") type = "並置 (Juxtaposition)";
 
-    return `${type}交叉之「閘門 ${pSun}」 (${pSun}/${pEarth} | ${dSun}/${dEarth})`;
+    // Identify Quarter
+    let quarter = '';
+    const q1 = [13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3, 27, 24];
+    const q2 = [2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 31, 33];
+    const q3 = [7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 28, 44];
+    const q4 = [1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60, 41, 19];
+
+    if (q1.includes(pSun)) quarter = 'Initiation';
+    else if (q2.includes(pSun)) quarter = 'Civilization';
+    else if (q3.includes(pSun)) quarter = 'Duality';
+    else if (q4.includes(pSun)) quarter = 'Mutation';
+
+    // Simplified Cross Name Table (Common names for specific gates)
+    const crossBaseNames = {
+        1: '斯芬克斯 (Sphinx)', 2: '斯芬克斯 (Sphinx)', 7: '斯芬克斯 (Sphinx)', 13: '斯芬克斯 (Sphinx)',
+        37: '規劃 (Planning)', 40: '規劃 (Planning)', 9: '規劃 (Planning)', 16: '規劃 (Planning)',
+        25: '純真 (Innocence)', 46: '愛 (Love)', 10: '愛 (Love)', 15: '愛 (Love)'
+    };
+
+    const baseName = crossBaseNames[pSun] || `閘門 ${pSun}`;
+    const fullName = `${type}交叉之「${baseName}」`;
+
+    // We return an object for better internal use if needed, 
+    // but the UI expects a string currently. 
+    // Let's modify the UI calling code to pass more info to showHDInterpretation.
+    return { fullName, type, quarter, gates: `${pSun}/${pEarth} | ${dSun}/${dEarth}` };
 }
 
 

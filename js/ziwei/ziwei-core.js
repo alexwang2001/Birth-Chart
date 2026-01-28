@@ -404,6 +404,151 @@ const ZiWei = (function () {
     }
 
     // ============================================================================
+    // SI HUA (四化) CALCULATION
+    // ============================================================================
+
+    /**
+     * Calculate Si Hua (Four Transformations) based on Heavenly Stem
+     * @param {number} stem - Heavenly Stem index (0-9)
+     * @returns {Object} Si Hua mapping { Lu, Quan, Ke, Ji }
+     */
+    function calculateSihua(stem) {
+        const sihuaTable = ZIWEI_DATA.SIHUA.TABLE[stem];
+        return {
+            Lu: sihuaTable[0],    // 化祿
+            Quan: sihuaTable[1],  // 化權
+            Ke: sihuaTable[2],    // 化科
+            Ji: sihuaTable[3]     // 化忌
+        };
+    }
+
+    /**
+     * Apply Si Hua markers to stars in palaces
+     * @param {Array} palaces - Palace array
+     * @param {number} stem - Heavenly Stem index (0-9)
+     * @returns {Object} Si Hua info with palace positions
+     */
+    function applySihua(palaces, stem) {
+        const sihua = calculateSihua(stem);
+        const sihuaTypes = ['Lu', 'Quan', 'Ke', 'Ji'];
+        const sihuaInfo = {};
+
+        palaces.forEach((palace, palaceIdx) => {
+            palace.stars.forEach(star => {
+                sihuaTypes.forEach(type => {
+                    if (star.id === sihua[type]) {
+                        star.sihua = type;
+                        sihuaInfo[type] = {
+                            starId: star.id,
+                            starName: star.name,
+                            palaceIdx: palaceIdx,
+                            palaceName: palace.name
+                        };
+                    }
+                });
+            });
+        });
+
+        return sihuaInfo;
+    }
+
+    // ============================================================================
+    // DAXIAN (大限) & LIUNIAN (流年) CALCULATION
+    // ============================================================================
+
+    /**
+     * Determine if Daxian runs clockwise
+     * @param {number} yearStem - Year Heavenly Stem index (0-9)
+     * @param {string} gender - 'male' or 'female'
+     * @returns {boolean} True if clockwise
+     */
+    function isDaxianClockwise(yearStem, gender) {
+        const isYangYear = yearStem % 2 === 0; // 甲丙戊庚壬 = 陽
+        const isMale = gender === 'male';
+        // 陽男陰女順行，陰男陽女逆行
+        return (isYangYear && isMale) || (!isYangYear && !isMale);
+    }
+
+    /**
+     * Calculate Daxian (Major Period) information
+     * @param {number} age - Current age
+     * @param {number} bureau - Five Elements Bureau (2-6)
+     * @param {number} mingPalace - Ming Palace position (0-11)
+     * @param {boolean} isClockwise - Direction of Daxian
+     * @returns {Object} Daxian info { palaceIndex, periodNumber, ageStart, ageEnd, ageRange }
+     */
+    function calculateDaxian(age, bureau, mingPalace, isClockwise) {
+        const startAge = bureau; // 起運年齡 = 局數
+
+        // 計算當前是第幾個大限 (0-indexed)
+        let periodNumber = 0;
+        if (age >= startAge) {
+            periodNumber = Math.floor((age - startAge) / 10);
+        }
+
+        // 計算大限宮位
+        const direction = isClockwise ? 1 : -1;
+        let palaceIndex = (mingPalace + periodNumber * direction) % 12;
+        if (palaceIndex < 0) palaceIndex += 12;
+
+        // 計算年齡區間
+        const ageStart = startAge + periodNumber * 10;
+        const ageEnd = ageStart + 9;
+
+        return {
+            palaceIndex,
+            periodNumber,
+            ageStart,
+            ageEnd,
+            ageRange: `${ageStart}-${ageEnd}歲`
+        };
+    }
+
+    /**
+     * Calculate all Daxian periods for a chart
+     * @param {number} bureau - Five Elements Bureau (2-6)
+     * @param {number} mingPalace - Ming Palace position (0-11)
+     * @param {boolean} isClockwise - Direction of Daxian
+     * @returns {Array} Array of 12 Daxian period objects
+     */
+    function calculateAllDaxian(bureau, mingPalace, isClockwise) {
+        const periods = [];
+        const startAge = bureau;
+        const direction = isClockwise ? 1 : -1;
+
+        for (let i = 0; i < 12; i++) {
+            let palaceIndex = (mingPalace + i * direction) % 12;
+            if (palaceIndex < 0) palaceIndex += 12;
+
+            const ageStart = startAge + i * 10;
+            const ageEnd = ageStart + 9;
+
+            periods.push({
+                periodNumber: i,
+                palaceIndex,
+                ageStart,
+                ageEnd,
+                ageRange: `${ageStart}-${ageEnd}歲`
+            });
+        }
+
+        return periods;
+    }
+
+    /**
+     * Calculate Liunian (Annual) palace
+     * @param {number} currentYear - Current Western year
+     * @returns {Object} Liunian info { branchIndex, branchName }
+     */
+    function calculateLiunian(currentYear) {
+        const branchIndex = (currentYear - 4) % 12;
+        return {
+            branchIndex,
+            branchName: EARTHLY_BRANCHES[branchIndex]
+        };
+    }
+
+    // ============================================================================
     // MAIN CALCULATION FUNCTION
     // ============================================================================
 
@@ -442,7 +587,10 @@ const ZiWei = (function () {
         // Step 7: Place stars
         placeStars(palaces, ziWeiPos, tianFuPos, lunar, birthHourBranch, yearStemIdx, yearBranchIdx);
 
-        // Step 8: Return complete chart data
+        // Step 8: Apply Si Hua (四化)
+        const sihuaInfo = applySihua(palaces, yearStemIdx);
+
+        // Step 9: Return complete chart data
         return {
             lunar: lunar,
             bureau: bureau,
@@ -451,7 +599,10 @@ const ZiWei = (function () {
             mingPos: mingIdx,
             shenPos: shenIdx,
             ziWeiPos: ziWeiPos,
-            tianFuPos: tianFuPos
+            tianFuPos: tianFuPos,
+            yearStem: yearStemIdx,
+            yearBranch: yearBranchIdx,
+            sihua: sihuaInfo
         };
     }
 
@@ -461,7 +612,12 @@ const ZiWei = (function () {
 
     return {
         calculate: calculate,
-        getLunarDate: getLunarDate // Expose for testing/debugging
+        getLunarDate: getLunarDate,
+        calculateSihua: calculateSihua,
+        calculateDaxian: calculateDaxian,
+        calculateAllDaxian: calculateAllDaxian,
+        calculateLiunian: calculateLiunian,
+        isDaxianClockwise: isDaxianClockwise
     };
 
 })();
