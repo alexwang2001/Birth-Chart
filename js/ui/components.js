@@ -253,7 +253,7 @@ function renderAspectsInternal() {
                     <strong>${asp.p1.name} ${asp.type.name} ${asp.p2.name}</strong>
                     <span style="font-size:0.65rem; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:1px 4px; border-radius:3px;">${typeLabel}</span>
                 </div>
-                <div style="font-size: 0.7rem; color: var(--text-dim);">容許度: ${asp.orb}°</div>
+                <div style="font-size: 0.7rem; color: var(--text-dim);">容許度: ${asp.orb.toFixed(3)}°</div>
             </div>
         `;
         aspectDiv.appendChild(item);

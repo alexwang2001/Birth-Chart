@@ -90,13 +90,14 @@ const ZiWei = (function () {
             day = solarDate.getDate();
         }
 
-        // Create date at noon local time to avoid timezone/midnight boundary issues
-        const objDate = new Date(year, month - 1, day, 12, 0, 0, 0);
+        // Create date at noon UTC to avoid timezone/DST issues
+        const objDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
 
-        // Also normalize LUNAR_BASE_DATE to noon for consistent comparison
-        const baseDate = new Date(1900, 0, 31, 12, 0, 0, 0);
+        // Also normalize LUNAR_BASE_DATE to noon UTC for consistent comparison
+        const baseDate = new Date(Date.UTC(1900, 0, 31, 12, 0, 0, 0));
 
-        let offset = Math.floor((objDate - baseDate) / MS_PER_DAY);
+        // Round to nearest integer to handle any slight JS float precision issues
+        let offset = Math.round((objDate - baseDate) / MS_PER_DAY);
 
         if (offset < 0) return null; // Before 1900
 
@@ -237,8 +238,10 @@ const ZiWei = (function () {
             // Non-divisible: use "seek method"
             const Q = Math.ceil(lunarDay / bureau);
             const R = (Q * bureau) - lunarDay;
-            const offset = Q + R;
-            return (2 + offset - 1) % 12;
+            // If R is even, offset = Q + R; If R is odd, offset = Q - R
+            const offset = (R % 2 === 0) ? (Q + R) : (Q - R);
+            let pos = (2 + offset - 1) % 12;
+            return pos < 0 ? pos + 12 : pos;
         }
     }
 
