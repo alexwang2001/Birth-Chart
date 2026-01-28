@@ -24,6 +24,18 @@ const GATE_CENTERS = {
     53: 'Root', 60: 'Root', 52: 'Root', 19: 'Root', 39: 'Root', 41: 'Root', 54: 'Root', 38: 'Root', 58: 'Root'
 };
 
+const CENTER_NAMES_ZH = {
+    'Head': '頭腦中心',
+    'Ajna': '邏輯中心',
+    'Throat': '喉嚨中心',
+    'G': 'G中心',
+    'Heart': '意志力中心',
+    'Spleen': '直覺中心',
+    'Solar': '情緒中心',
+    'Sacral': '薦骨中心',
+    'Root': '根部中心'
+};
+
 // Channels (Gate Pairs)
 const CHANNELS = [
     [1, 8], [2, 14], [3, 60], [4, 63], [5, 15], [6, 59], [7, 31], [9, 52], [10, 20],
@@ -216,18 +228,18 @@ const HumanDesign = {
         }
 
         if (definedCentersData.length === 0) {
-            type = 'Reflector (反映者)';
+            type = '反映者 (Reflector)';
         } else if (centers['Sacral'].defined) {
             // Generator family
             if (motorToThroat) {
-                type = 'Manifesting Generator (顯示生產者)';
+                type = '顯示生產者 (Manifesting Generator)';
             } else {
-                type = 'Generator (生產者)';
+                type = '生產者 (Generator)';
             }
         } else if (motorToThroat) {
-            type = 'Manifestor (顯示者)';
+            type = '顯示者 (Manifestor)';
         } else {
-            type = 'Projector (投射者)';
+            type = '投射者 (Projector)';
         }
 
         // 6. Profile
@@ -248,19 +260,19 @@ const HumanDesign = {
         // 6. None/Moon (Reflector) - Outer
         // 7. Mental (No inner authority)
 
-        let authority = 'None';
-        if (centers['Solar'].defined) authority = 'Emotional (情緒權威)';
-        else if (centers['Sacral'].defined) authority = 'Sacral (薦骨權威)';
-        else if (centers['Spleen'].defined) authority = 'Splenic (直覺權威)';
+        let authority = '無';
+        if (centers['Solar'].defined) authority = '情緒權威 (Emotional)';
+        else if (centers['Sacral'].defined) authority = '薦骨權威 (Sacral)';
+        else if (centers['Spleen'].defined) authority = '直覺權威 (Splenic)';
         else if (centers['Heart'].defined) {
             // Ego Projected or Ego Manifested
             // If Throat is connected to Heart -> Manifested. Else Projected.
-            if (isConnected('Heart', 'Throat')) authority = 'Ego Manifested (意志力顯示權威)';
-            else authority = 'Ego Projected (意志力投射權威)';
+            if (isConnected('Heart', 'Throat')) authority = '意志力顯示權威 (Ego Manifested)';
+            else authority = '意志力投射權威 (Ego Projected)';
         }
-        else if (centers['G'].defined) authority = 'Self Projected (自我投射權威)';
-        else if (type.includes('Reflector')) authority = 'Lunar (月亮權威)'; // Cycle
-        else authority = 'Mental/None (環境權威)'; // Mental Projector
+        else if (centers['G'].defined) authority = '自我投射權威 (Self Projected)';
+        else if (type.includes('Reflector')) authority = '月亮權威 (Lunar)'; // Cycle
+        else authority = '環境權威/無 (Mental/None)'; // Mental Projector
 
 
         return {

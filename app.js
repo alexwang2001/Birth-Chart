@@ -832,6 +832,12 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                 '37-40': '社群 (Community)', '39-55': '情緒 (Emoting)', '42-53': '成熟 (Maturation)', '47-64': '抽象 (Abstraction)'
             };
 
+            const hdPlanetNames = {
+                'Sun': '太陽', 'Earth': '地球', 'Moon': '月亮', 'NorthNode': '北交點', 'SouthNode': '南交點',
+                'Mercury': '水星', 'Venus': '金星', 'Mars': '火星', 'Jupiter': '木星', 'Saturn': '土星',
+                'Uranus': '天王星', 'Neptune': '海王星', 'Pluto': '冥王星'
+            };
+
             if (hdData.activeChannels.length === 0) {
                 chanDiv.innerHTML += '<div style="color:rgba(255,255,255,0.4); font-style:italic; text-align:center; margin-top:2rem;">無特定通道定義 (Reflector)</div>';
             } else {
@@ -866,8 +872,9 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                             </div>`;
 
             hdData.personality.forEach(p => {
+                const pName = hdPlanetNames[p.id] || p.id;
                 pCol += `<div class="hd-planet-row">
-                    <span style="color:#ccc;">${p.id}</span>
+                    <span style="color:#ccc;">${pName}</span>
                     <span style="font-family:monospace; font-weight:bold;">${p.gate}.${p.line}</span>
                  </div>`;
             });
@@ -880,8 +887,9 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                             </div>`;
 
             hdData.design.forEach(d => {
+                const dName = hdPlanetNames[d.id] || d.id;
                 dCol += `<div class="hd-planet-row">
-                    <span style="color:#ccc;">${d.id}</span>
+                    <span style="color:#ccc;">${dName}</span>
                     <span style="font-family:monospace; font-weight:bold; color:#ff5f5f;">${d.gate}.${d.line}</span>
                  </div>`;
             });
@@ -1202,8 +1210,10 @@ function renderHumanDesignSVG(hdData) {
         const cls = `hd-center-shape ${isActive ? 'defined' : 'undefined'}`;
         const fill = isActive ? c.color : 'none';
 
+        const label = CENTER_NAMES_ZH[c.id] || c.id;
+
         return `<path d="${path}" class="${cls}" style="${isActive ? 'fill:' + c.color : ''}" />
-                <text x="${cx}" y="${cy}" dy="4" class="hd-center-label" style="${isActive ? 'fill:#000; font-weight:bold;' : ''}">${c.id}</text>`;
+                <text x="${cx}" y="${cy}" dy="4" class="hd-center-label" style="${isActive ? 'fill:#000; font-weight:bold;' : ''}">${label}</text>`;
     };
 
     // Build SVG
