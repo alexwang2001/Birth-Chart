@@ -914,16 +914,32 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
 
         // --- Human Design Calculation ---
         const hdData = HumanDesign.calculate(jd);
+
+        // --- Human Design Transit Overlay ---
+        let hdTransitData = null;
+        if (document.getElementById('transit-date').value) {
+            const tDate = document.getElementById('transit-date').value;
+            const tHour = document.getElementById('transit-hour').value;
+            const tMin = document.getElementById('transit-minute').value;
+            const tJd = getJulianDate(tDate, `${tHour}:${tMin}`);
+            hdTransitData = HumanDesign.calculate(tJd);
+        }
+
         const hdPanel = document.getElementById('hd-results-list');
+
         if (hdPanel && hdData) {
             hdPanel.style.display = 'block';
+
+            // 0. Circuitry & Cross Calculation
+            const circuitry = calcCircuitry(hdData);
+            const crossName = getIncarnationCross(hdData);
 
             // 1. Summary Cards
             const summaryDiv = document.getElementById('hd-summary');
             summaryDiv.innerHTML = `
                 <div class="hd-card" style="cursor:pointer;" onclick="showHDInterpretation('type', '${hdData.type}')">
                     <div class="hd-card-label">類型 (Type)</div>
-                    <div class="hd-card-value" style="font-size:1.1rem;">${hdData.type}</div>
+                    <div class="hd-card-value" style="font-size:1.1rem; color:var(--hd-accent);">${hdData.type}</div>
                 </div>
                  <div class="hd-card" style="cursor:pointer;" onclick="showHDInterpretation('profile', '${hdData.profile}')">
                     <div class="hd-card-label">人生角色 (Profile)</div>
@@ -931,17 +947,56 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
                 </div>
                  <div class="hd-card" style="cursor:pointer;" onclick="showHDInterpretation('authority', '${hdData.authority}')">
                     <div class="hd-card-label">內在權威 (Authority)</div>
-                    <div class="hd-card-value" style="font-size:1.1rem;">${hdData.authority}</div>
+                    <div class="hd-card-value" style="font-size:1.1rem; color:#69ff8c;">${hdData.authority}</div>
+                </div>
+                <div class="hd-card" style="grid-column: 1 / -1; align-items: flex-start; text-align: left;">
+                    <div class="hd-card-label">輪迴交叉 (Incarnation Cross)</div>
+                    <div class="hd-card-value" style="font-size:1.2rem; color:var(--text-gold);">${crossName}</div>
+                </div>
+                <div class="hd-card" style="grid-column: 1 / -1; align-items: flex-start;">
+                    <div class="hd-card-label">迴路分析 (Circuitry Analysis)</div>
+                    <div style="width:100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 10px;">
+                        <div class="circuit-bar-group">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
+                                <span>個人 (Indiv)</span>
+                                <span>${Math.round(circuitry.individual / circuitry.total * 100)}%</span>
+                            </div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden;">
+                                <div style="width:${circuitry.individual / circuitry.total * 100}%; height:100%; background:#ffff70;"></div>
+                            </div>
+                        </div>
+                        <div class="circuit-bar-group">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
+                                <span>族群 (Tribal)</span>
+                                <span>${Math.round(circuitry.tribal / circuitry.total * 100)}%</span>
+                            </div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden;">
+                                <div style="width:${circuitry.tribal / circuitry.total * 100}%; height:100%; background:#ff5f5f;"></div>
+                            </div>
+                        </div>
+                        <div class="circuit-bar-group">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
+                                <span>社會 (Coll)</span>
+                                <span>${Math.round(circuitry.collective / circuitry.total * 100)}%</span>
+                            </div>
+                            <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden;">
+                                <div style="width:${circuitry.collective / circuitry.total * 100}%; height:100%; background:#bc8cff;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
              `;
+
+
 
             // 2. BodyGraph Visualization
             const centersDiv = document.getElementById('hd-centers-grid');
             centersDiv.className = 'hd-bodygraph-container'; // Ensures container styling
             centersDiv.style.display = 'block';
 
-            // Render High-Fidelity SVG
-            centersDiv.innerHTML = renderHumanDesignSVG(hdData);
+            // Render High-Fidelity SVG with Transit Overlay
+            centersDiv.innerHTML = renderHumanDesignSVG(hdData, hdTransitData);
+
 
             // 3. Channels List (Styled Panel)
             const chanDiv = document.getElementById('hd-channels-list');
@@ -1215,9 +1270,28 @@ document.getElementById('export-btn').addEventListener('click', () => {
 
 // --- Human Design SVG Renderer ---
 
-function renderHumanDesignSVG(hdData) {
+function renderHumanDesignSVG(hdData, hdTransitData = null) {
     const W = 500;
     const H = 640;
+
+    // Combine Gates for Center Definition (Transit can define NEW centers!)
+    const allActiveGates = new Set(hdData.allActiveGates || [...hdData.personality, ...hdData.design].map(g => g.gate));
+    const transitGates = hdTransitData ? new Set([...hdTransitData.personality, ...hdTransitData.design].map(g => g.gate)) : new Set();
+
+    // Recalculate combined centers
+    const combinedCenters = JSON.parse(JSON.stringify(hdData.centers));
+    if (hdTransitData) {
+        // Find channels formed by combined gates
+        const totalGates = new Set([...allActiveGates, ...transitGates]);
+        CHANNELS.forEach(pair => {
+            if (totalGates.has(pair[0]) && totalGates.has(pair[1])) {
+                const c1 = GATE_CENTERS[pair[0]];
+                const c2 = GATE_CENTERS[pair[1]];
+                if (c1) combinedCenters[c1].defined = true;
+                if (c2) combinedCenters[c2].defined = true;
+            }
+        });
+    }
 
     // 1. Define Centers Layout
     const centerLayout = {
@@ -1310,7 +1384,7 @@ function renderHumanDesignSVG(hdData) {
     ];
 
     // Helper: Draw Center Shape
-    const drawShape = (c, isActive) => {
+    const drawShape = (c, isActive, isNewlyDefined = false) => {
         let path = '';
         const cx = c.x, cy = c.y, w = c.w, h = c.h;
         const hw = w / 2, hh = h / 2;
@@ -1324,29 +1398,27 @@ function renderHumanDesignSVG(hdData) {
         } else if (c.type === 'diamond') {
             path = `M${cx},${cy - hh} L${cx + hw},${cy} L${cx},${cy + hh} L${cx - hw},${cy} Z`;
         } else if (c.type === 'tri-left') {
-            // Spleen: Points left? No, Spleen is usually drawn as a triangle pointing "inwards" or distinct. 
-            // In standard BodyGraph, Spleen is a triangle pointing to the right (towards center).
-            // Let's draw it pointing Right (towards G).
             path = `M${cx - hw},${cy - hh} L${cx + hw},${cy} L${cx - hw},${cy + hh} Z`;
-            // Wait, let's just use standard Triangle pointing IN.
         } else if (c.type === 'tri-right') {
-            // Solar: Points Left (towards center)
             path = `M${cx + hw},${cy - hh} L${cx - hw},${cy} L${cx + hw},${cy + hh} Z`;
         } else if (c.type === 'tri-br') {
-            // Heart: Small triangle.
             path = `M${cx},${cy - hh} L${cx + hw},${cy + hh} L${cx - hw},${cy + hh} Z`;
         }
 
-        const cls = `hd-center-shape ${isActive ? 'defined' : 'undefined'}`;
-        const fill = isActive ? c.color : 'none';
+        let cls = `hd-center-shape ${isActive ? 'defined' : 'undefined'}`;
+        if (isNewlyDefined) cls += ' transit-defined';
+
+        let style = isActive ? `fill:${c.color};` : '';
+        if (isNewlyDefined) style = `fill:rgba(105, 255, 140, 0.7); stroke:#69ff8c; stroke-width:2px;`;
 
         const label = CENTER_NAMES_ZH[c.id] || c.id;
 
         return `<g style="cursor:pointer;" onclick="showHDInterpretation('center', '${c.id}')">
-                    <path d="${path}" class="${cls}" style="${isActive ? 'fill:' + c.color : ''}" />
+                    <path d="${path}" class="${cls}" style="${style}" />
                     <text x="${cx}" y="${cy}" dy="4" class="hd-center-label" style="${isActive ? 'fill:#000; font-weight:bold;' : ''}">${label}</text>
                 </g>`;
     };
+
 
     // Build SVG
     let svgHtml = `<svg class="hd-chart-svg" viewBox="0 0 500 640" xmlns="http://www.w3.org/2000/svg">`;
@@ -1364,10 +1436,16 @@ function renderHumanDesignSVG(hdData) {
         return [k1, k2];
     }).flat());
 
+    // Transit Active Set
+    const transitActiveSet = hdTransitData ? new Set(hdTransitData.activeChannels.map(ch => {
+        const k1 = `${ch[0]}-${ch[1]}`;
+        return k1;
+    })) : new Set();
+
     // Helper: is Gate Active in P or D?
-    // hdData.personality[i].gate
     const isP = (gate) => hdData.personality.some(g => g.gate === gate);
     const isD = (gate) => hdData.design.some(g => g.gate === gate);
+    const isT = (gate) => hdTransitData && (hdTransitData.personality.some(g => g.gate === gate) || hdTransitData.design.some(g => g.gate === gate));
 
     channelsMap.forEach(ch => {
         const [g1, g2] = ch.id.split('-').map(Number);
@@ -1385,29 +1463,35 @@ function renderHumanDesignSVG(hdData) {
         svgHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="hd-connector-line" />`;
 
         // Draw Half-Channels (Gates)
-        // Check Gate 1
         const drawGate = (gate, xStart, yStart, xEnd, yEnd) => {
             const mx = (xStart + xEnd) / 2;
             const my = (yStart + yEnd) / 2;
 
-            // Determine Color
             const p = isP(gate);
             const d = isD(gate);
+            const t = isT(gate);
 
-            if (!p && !d) return;
+            if (!p && !d && !t) return;
 
             let stroke = '#888';
-            if (p && d) stroke = 'url(#striped)'; // Complex to impl stripes in string. Use dashed overlay?
-            else if (p) stroke = '#ffffff'; // Personality Black -> White in Dark Mode
-            else if (d) stroke = '#ff5f5f'; // Design Red
+            if (p && d) stroke = 'url(#striped)';
+            else if (p) stroke = '#ffffff';
+            else if (d) stroke = '#ff5f5f';
 
-            // Draw half line
-            svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="${stroke}" stroke-width="4" stroke-linecap="round" />`;
+            // Draw Natal Gate
+            if (p || d) {
+                svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="${stroke}" stroke-width="5" stroke-linecap="round" />`;
+                if (p && d) {
+                    svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="#ff5f5f" stroke-width="5" stroke-linecap="round" />`;
+                    svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="#ffffff" stroke-width="5" stroke-dasharray="3,3" stroke-linecap="round" />`;
+                }
+            }
 
-            // If both P & D, draw dashed overlay or side-by-side?
-            if (p && d) {
-                svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="#ff5f5f" stroke-width="4" stroke-linecap="round" />`;
-                svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="#ffffff" stroke-width="4" stroke-dasharray="4,4" stroke-linecap="round" />`;
+            // Draw Transit Overlay (Green)
+            if (t) {
+                const width = (p || d) ? 2 : 5; // Thinner if overlaying natal
+                const glow = (p || d) ? '' : 'filter:drop-shadow(0 0 3px #69ff8c);';
+                svgHtml += `<line x1="${xStart}" y1="${yStart}" x2="${mx}" y2="${my}" stroke="#69ff8c" stroke-width="${width}" stroke-linecap="round" style="${glow}" />`;
             }
         };
 
@@ -1417,11 +1501,60 @@ function renderHumanDesignSVG(hdData) {
 
     // Draw Centers
     Object.values(centerLayout).forEach(c => {
-        const isDefined = hdData.centers[c.id].defined;
-        svgHtml += drawShape(c, isDefined);
+        const isDefined = combinedCenters[c.id].defined;
+        const isNatalDefined = hdData.centers[c.id].defined;
+        const isNewlyDefined = isDefined && !isNatalDefined;
+
+        // Add a class for newly defined centers by transit
+        let finalColor = isDefined ? c.color : 'none';
+        if (isNewlyDefined) finalColor = 'rgba(105, 255, 140, 0.6)'; // Greenish defined by transit
+
+        svgHtml += drawShape(c, isDefined, isNewlyDefined);
     });
 
     svgHtml += `</svg>`;
     return svgHtml;
 }
+
+// --- Circuitry and Cross Helpers ---
+
+function calcCircuitry(hdData) {
+    const circuits = { individual: 0, tribal: 0, collective: 0, total: 0 };
+    const gates = new Set([...hdData.personality, ...hdData.design].map(p => p.gate));
+
+    const individual = [1, 8, 2, 14, 3, 60, 24, 61, 43, 23, 38, 28, 57, 20, 10, 51, 25, 39, 55, 12, 22];
+    const tribal = [6, 59, 49, 19, 37, 40, 21, 45, 32, 54, 50, 27, 26, 44];
+    const collective = [64, 47, 11, 56, 17, 62, 31, 7, 33, 13, 16, 48, 18, 58, 53, 42, 9, 52, 5, 15, 29, 46, 30, 41, 35, 36];
+
+    gates.forEach(g => {
+        circuits.total++;
+        if (individual.includes(g)) circuits.individual++;
+        if (tribal.includes(g)) circuits.tribal++;
+        if (collective.includes(g)) circuits.collective++;
+    });
+
+    return circuits;
+}
+
+function getIncarnationCross(hdData) {
+    const pSun = hdData.personality.find(p => p.id === 'Sun').gate;
+    const pEarth = hdData.personality.find(p => p.id === 'Earth').gate;
+    const dSun = hdData.design.find(p => p.id === 'Sun').gate;
+    const dEarth = hdData.design.find(p => p.id === 'Earth').gate;
+
+    // Simplified Cross Name Table (Major ones)
+    const crossNames = {
+        1: '創新 (Infection)', 2: '方向 (Direction)', 3: '解釋 (Explanation)', 4: '規律 (Formulation)',
+        // ... this is very long, normally we'd have a full DB. 
+        // For now, return a generic name with gates
+    };
+
+    const profile = hdData.profile.split(' ')[0]; // e.g. "1/3"
+    let type = "右角 (Right Angle)";
+    if (["5/1", "5/2", "6/2", "6/3"].includes(profile)) type = "左角 (Left Angle)";
+    if (profile === "4/1") type = "並置 (Juxtaposition)";
+
+    return `${type}交叉之「閘門 ${pSun}」 (${pSun}/${pEarth} | ${dSun}/${dEarth})`;
+}
+
 

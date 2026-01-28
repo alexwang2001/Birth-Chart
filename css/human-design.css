@@ -2,8 +2,8 @@
 
 :root {
     --hd-bg: #0f111a;
-    --hd-panel-bg: rgba(20, 20, 30, 0.6);
-    --hd-border: rgba(255, 255, 255, 0.1);
+    --hd-panel-bg: rgba(20, 20, 30, 0.7);
+    --hd-border: rgba(255, 255, 255, 0.08);
     --hd-text-main: #e0e0e0;
     --hd-text-dim: #888;
     --hd-accent: #ff69b4;
@@ -20,6 +20,28 @@
     --center-spleen: #bc8cff;
     --center-root: #bc8cff;
 }
+
+/* Animations */
+@keyframes pulse-glow {
+    0% {
+        filter: drop-shadow(0 0 5px currentColor);
+    }
+
+    50% {
+        filter: drop-shadow(0 0 15px currentColor);
+    }
+
+    100% {
+        filter: drop-shadow(0 0 5px currentColor);
+    }
+}
+
+@keyframes draw-line {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
 
 /* Summary Cards */
 #hd-summary {
@@ -81,54 +103,46 @@ svg.hd-chart-svg {
 /* SVG Elements */
 .hd-connector-line {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 2;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 6;
     stroke-linecap: round;
-}
-
-.hd-channel-active-black {
-    stroke: #ffffff;
-    /* Personality - White/Silver */
-    stroke-width: 3;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-}
-
-.hd-channel-active-red {
-    stroke: #ff5f5f;
-    /* Design - Red */
-    stroke-width: 3;
-    filter: drop-shadow(0 0 2px rgba(255, 95, 95, 0.5));
-}
-
-.hd-channel-active-mixed {
-    /* For striped pattern effect, handled via defs/mask usually, but here we can layer lines */
 }
 
 /* Centers */
 .hd-center-shape {
-    fill: rgba(20, 20, 30, 0.8);
-    stroke: rgba(255, 255, 255, 0.3);
-    stroke-width: 2px;
-    transition: all 0.3s ease;
+    fill: rgba(30, 30, 50, 0.4);
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1.5px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hd-center-shape.defined {
-    stroke: none;
-    fill-opacity: 0.9;
-    filter: drop-shadow(0 0 10px currentColor);
+    stroke: rgba(255, 255, 255, 0.4);
+    fill-opacity: 0.85;
+    animation: pulse-glow 3s infinite ease-in-out;
 }
 
 .hd-center-shape.undefined {
-    fill: rgba(255, 255, 255, 0.05);
+    fill: rgba(255, 255, 255, 0.03);
+    stroke-dasharray: 4, 4;
 }
 
 .hd-center-label {
-    font-size: 10px;
-    fill: rgba(255, 255, 255, 0.5);
-    font-family: sans-serif;
+    font-size: 11px;
+    fill: rgba(255, 255, 255, 0.4);
+    font-family: 'Inter', sans-serif;
     text-anchor: middle;
     pointer-events: none;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
+
+.hd-center-shape.defined+.hd-center-label {
+    fill: #000;
+    font-weight: bold;
+    text-shadow: none;
+}
+
 
 /* Channels Panel */
 .hd-channels-panel {
@@ -201,4 +215,46 @@ svg.hd-chart-svg {
 
 .hd-planet-row:hover {
     background: rgba(255, 255, 255, 0.08);
+}
+
+/* Specific Styles for UI components */
+.circuit-bar-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.transit-defined {
+    animation: pulse-glow-green 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow-green {
+    0% {
+        filter: drop-shadow(0 0 2px #69ff8c);
+    }
+
+    50% {
+        filter: drop-shadow(0 0 8px #69ff8c);
+    }
+
+    100% {
+        filter: drop-shadow(0 0 2px #69ff8c);
+    }
+}
+
+/* Scrollbar styling for panels */
+.hd-channels-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.hd-channels-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 105, 180, 0.2);
+    border-radius: 2px;
+}
+
+/* HD Result Panel Header */
+#hd-results-list {
+    background: linear-gradient(to bottom, rgba(255, 105, 180, 0.05) 0%, transparent 400px);
+    padding: 2rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 105, 180, 0.1);
 }
