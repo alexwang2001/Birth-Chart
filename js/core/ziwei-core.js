@@ -90,8 +90,13 @@ const ZiWei = (function () {
             day = solarDate.getDate();
         }
 
-        const objDate = new Date(year, month - 1, day);
-        let offset = Math.floor((objDate - LUNAR_BASE_DATE) / MS_PER_DAY);
+        // Create date at noon local time to avoid timezone/midnight boundary issues
+        const objDate = new Date(year, month - 1, day, 12, 0, 0, 0);
+
+        // Also normalize LUNAR_BASE_DATE to noon for consistent comparison
+        const baseDate = new Date(1900, 0, 31, 12, 0, 0, 0);
+
+        let offset = Math.floor((objDate - baseDate) / MS_PER_DAY);
 
         if (offset < 0) return null; // Before 1900
 
@@ -290,13 +295,16 @@ const ZiWei = (function () {
 
         // Second pass: assign stems and branches
         for (let i = 0; i < 12; i++) {
-            const dist = i >= 2 ? i - 2 : i - 2 + 12;
+            // Stems are assigned based on BRANCH, not position
+            // Yin branch (index 2) has yinStem, and stems progress through branches
+            const branchIdx = i;
+            const dist = branchIdx >= 2 ? branchIdx - 2 : branchIdx - 2 + 12;
             const stem = (yinStem + dist) % 10;
 
             palaces[i].stem = HEAVENLY_STEMS[stem];
             palaces[i].stemIdx = stem;
-            palaces[i].branch = EARTHLY_BRANCHES[i];
-            palaces[i].branchIdx = i;
+            palaces[i].branch = EARTHLY_BRANCHES[branchIdx];
+            palaces[i].branchIdx = branchIdx;
         }
 
         return palaces;
