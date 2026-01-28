@@ -494,76 +494,181 @@ button:active {
 .ziwei-grid-layout {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(4, minmax(130px, auto));
-    /* Increased min-height */
-    gap: 0.5rem;
+    grid-template-rows: repeat(4, minmax(160px, auto));
+    gap: 6px;
     grid-template-areas:
         "si wu wei shen"
         "chen center center you"
         "mao center center xu"
         "yin chou zi hai";
-    background: rgba(20, 10, 30, 0.5);
-    padding: 1rem;
-    border-radius: 12px;
-    border: 1px solid rgba(188, 140, 255, 0.2);
+    background: #0f0b15;
+    padding: 6px;
+    border-radius: 4px;
+    border: 2px solid #3a2e4d;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
 .ziwei-cell {
-    background: rgba(30, 20, 40, 0.8);
+    background: linear-gradient(135deg, rgba(25, 20, 35, 0.95) 0%, rgba(15, 10, 20, 0.98) 100%);
     border: 1px solid rgba(188, 140, 255, 0.1);
-    border-radius: 8px;
-    padding: 0.8rem;
-    /* Increased padding */
-    min-height: 140px;
-    /* Increased min-height */
+    border-radius: 4px;
     position: relative;
-    transition: all 0.3s;
+    overflow: hidden;
+    padding: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .ziwei-cell:hover {
-    background: rgba(50, 30, 70, 0.9);
-    border-color: rgba(188, 140, 255, 0.5);
+    background: linear-gradient(135deg, rgba(40, 30, 55, 0.95) 0%, rgba(25, 20, 35, 0.98) 100%);
+    border-color: rgba(201, 160, 80, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    z-index: 10;
 }
 
-/* Make internal test larger */
-.ziwei-cell .palace-header {
-    /* Previously defined inline, but we can override or set here if I change JS. 
-       Actually JS uses inline styles for header. I should rely on CSS class if possible, 
-       but for now I will just ensure the stars are larger in JS or add a rule here that cascades. */
+/* Background Branch Character (Watermark) */
+.ziwei-bg-branch {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    font-size: 5rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.03);
+    font-family: "Kaiti", "STKaiti", serif;
+    pointer-events: none;
+    z-index: 0;
+    line-height: 1;
 }
 
-.stars-container {
-    /* Target the container of stars */
+/* Header: Stem+Branch and Ming/Shen markers */
+.ziwei-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    z-index: 1;
+}
+
+.ziwei-stem-branch {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+}
+
+.ziwei-markers {
+    display: flex;
+    gap: 4px;
+}
+
+.ziwei-marker {
+    font-size: 0.7rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.marker-ming {
+    border: 1px solid #ff5f5f;
+    color: #ff5f5f;
+    background: rgba(255, 95, 95, 0.05);
+}
+
+.marker-shen {
+    border: 1px solid #ffff70;
+    color: #ffff70;
+    background: rgba(255, 255, 112, 0.05);
+}
+
+/* Stars Container */
+.ziwei-stars {
+    flex-grow: 1;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 1.8rem;
+    align-content: flex-start;
+    gap: 4px;
+    z-index: 1;
 }
 
-.stars-container span {
-    font-size: 1.1rem !important;
-    /* Force larger font for stars */
-    margin-right: 4px;
-    text-shadow: 0 0 2px black;
+.ziwei-star {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 4px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+}
+
+/* Palace Name Label */
+.ziwei-palace-name {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    z-index: 1;
+    font-size: 1.2rem;
+    font-weight: 900;
+    background: linear-gradient(to bottom, #e6c27a, #c9a050);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 2px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    pointer-events: none;
+    /* Let clicks pass through to cell */
 }
 
 
+/* Center Area */
 .ziwei-center {
     grid-area: center;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(20, 15, 25, 0.6);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 12px;
-    border: 1px dashed rgba(188, 140, 255, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(188, 140, 255, 0.1);
+    position: relative;
 }
 
-.center-content {
+.ziwei-center-content {
     text-align: center;
-    color: #bc8cff;
+    padding: 1rem;
 }
 
-/* Grid Area Assignments */
+.center-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px rgba(201, 160, 80, 0.3);
+}
+
+.center-info {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.bureau-tag {
+    display: inline-block;
+    background: var(--primary);
+    color: black;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Grid Areas */
 .c-si {
     grid-area: si;
 }
@@ -612,15 +717,31 @@ button:active {
     grid-area: hai;
 }
 
-/* Corner labels for Earthly Branches */
-.ziwei-cell::before {
-    content: attr(data-b);
-    /* Fallback if we just want simple english debug label, but likely we want chinese hardcoded or via JS */
-    position: absolute;
-    bottom: 2px;
-    right: 5px;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.1);
-    text-transform: uppercase;
-    pointer-events: none;
+@media (max-width: 900px) {
+    .ziwei-grid-layout {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, 150px);
+        grid-template-areas:
+            "si wu"
+            "wei shen"
+            "you xu"
+            "hai zi"
+            "chou yin"
+            "mao chen";
+    }
+
+    .ziwei-center {
+        display: none;
+        /* Hide center in mobile view or move it */
+    }
+
+    .ziwei-palace-name {
+        writing-mode: horizontal-tb;
+        bottom: 5px;
+        right: 5px;
+    }
+
+    .ziwei-bg-branch {
+        font-size: 3rem;
+    }
 }

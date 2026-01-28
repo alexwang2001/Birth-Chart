@@ -720,52 +720,65 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
             document.getElementById('ziwei-results-list').style.display = 'block';
 
             // Update Center Info
-            // Update Center Info (Removed per user request)
-            /*
-            const centerInfo = document.getElementById('ziwei-info');
-            if (centerInfo) {
+            const centerDiv = document.querySelector('.ziwei-center');
+            if (centerDiv) {
                 const lunar = zwData.lunar;
-                centerInfo.innerHTML = `
-                    <div style="margin-bottom:0.3rem">農曆 ${lunar.year}年${lunar.isLeap ? "閏" : ""}${lunar.month}月${lunar.day}日</div>
-                    <div style="font-weight:bold; color:var(--text-white)">${zwData.bureauName}</div>
+                centerDiv.innerHTML = `
+                    <div class="ziwei-center-content">
+                        <div class="center-title">紫微斗數</div>
+                        <div class="center-info">
+                            <div>農曆 ${lunar.year} 年 ${lunar.isLeap ? "閏" : ""}${lunar.month} 月 ${lunar.day} 日</div>
+                            <div class="bureau-tag">${zwData.bureauName}</div>
+                            <div>陽曆 ${date} / ${hh}時</div>
+                        </div>
+                    </div>
                 `;
             }
-            */
 
             // Render Palaces
             zwData.palaces.forEach((palace, i) => { // i is position index 0-11 (Zi to Hai)
                 // Map position index to DOM ID
-                // 0->zi, 1->chou... 
                 const branches = ["zi", "chou", "yin", "mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"];
                 const elId = `palace-${branches[i]}`;
                 const el = document.getElementById(elId);
-                if (el) {
-                    let html = `<div class="palace-header" style="position: absolute; top:5px; right:5px; opacity:0.3; font-size:1.5rem; font-weight:900;">${palace.branch}</div>
-                                 <div style="position: absolute; bottom:5px; right:5px; opacity:0.5; font-size:0.8rem;">${palace.name}</div>
-                                 <div style="position: absolute; top:5px; left:5px; color: ${palace.isMing ? '#ff5f5f' : (palace.isShen ? '#ffff70' : '#8b949e')}; font-weight:bold; font-size: 1rem;">
-                                    ${palace.stem}
-                                    ${palace.isMing ? '<span style="border:1px solid #ff5f5f; border-radius:4px; padding:0 2px; font-size:0.7rem; margin-left:2px;">命</span>' : ''}
-                                    ${palace.isShen ? '<span style="border:1px solid #ffff70; border-radius:4px; padding:0 2px; font-size:0.7rem; margin-left:2px;">身</span>' : ''}
-                                 </div>
-                                 <div class="stars-container" style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 8px;">`;
 
-                    // Sort stars by offset/importance if needed, or just standard
+                if (el) {
+                    // Sort stars: Major > Minor (currently only major)
+                    // We can also sort by color or fixed order if desired
+
+                    let starsHtml = '';
                     palace.stars.forEach(star => {
-                        html += `<span style="color:${star.color}; font-weight:bold; font-size:1.2rem; text-shadow: 0 0 2px rgba(0,0,0,0.8);">${star.name}</span>`;
+                        starsHtml += `<span class="ziwei-star" style="color:${star.color}">${star.name}</span>`;
                     });
 
-                    html += `</div>`;
-                    el.innerHTML = html;
+                    el.innerHTML = `
+                        <div class="ziwei-bg-branch">${palace.branch}</div>
+                        <div class="ziwei-header">
+                            <span class="ziwei-stem-branch">${palace.stem}${palace.branch}</span>
+                            <div class="ziwei-markers">
+                                ${palace.isMing ? '<span class="ziwei-marker marker-ming">命</span>' : ''}
+                                ${palace.isShen ? '<span class="ziwei-marker marker-shen">身</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="ziwei-stars">
+                            ${starsHtml}
+                        </div>
+                        <div class="ziwei-palace-name">${palace.name}</div>
+                    `;
+
+                    // Interaction
                     el.style.cursor = 'pointer';
                     el.onclick = () => showZiWeiInterpretation(palace);
 
-                    // Highlight Ming Palace
+                    // Add Ming Palace Halo Effect (Optional JS override, though CSS handles hover)
                     if (palace.isMing) {
-                        el.style.background = 'rgba(255, 95, 95, 0.1)';
-                        el.style.border = '1px solid rgba(255, 95, 95, 0.3)';
+                        el.style.boxShadow = 'inset 0 0 20px rgba(255, 95, 95, 0.1)';
+                        el.style.borderColor = 'rgba(255, 95, 95, 0.3)';
+                    } else if (palace.isShen) {
+                        el.style.borderColor = 'rgba(255, 255, 112, 0.3)';
                     } else {
-                        el.style.background = ''; // reset
-                        el.style.border = '';
+                        el.style.boxShadow = '';
+                        el.style.borderColor = ''; // Let CSS take over
                     }
                 }
             });
