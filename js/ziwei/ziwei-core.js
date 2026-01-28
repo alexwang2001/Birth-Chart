@@ -13,79 +13,14 @@ const ZiWei = (function () {
     // CONSTANTS & DATA
     // ============================================================================
 
-    /**
-     * Lunar Calendar Data (1900-2100)
-     * Each hex value encodes:
-     *   - Bits 0-3: Leap month (0=none, 1-12=month number)
-     *   - Bits 4-16: Month days (1=30 days, 0=29 days)
-     * Reference date: 1900-01-31 = Lunar 1900-01-01
-     */
-    const LUNAR_INFO = [
-        0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
-        0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977,
-        0x04970, 0x0a4b0, 0x0b4b5, 0x06a50, 0x06d40, 0x1ab54, 0x02b60, 0x09570, 0x052f2, 0x04970,
-        0x06566, 0x0d4a0, 0x0ea50, 0x06e95, 0x05ad0, 0x02b60, 0x186e3, 0x092e0, 0x1c8d7, 0x0c950,
-        0x0d4a0, 0x1d8a6, 0x0b550, 0x056a0, 0x1a5b4, 0x025d0, 0x092d0, 0x0d2b2, 0x0a950, 0x0b557,
-        0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5d0, 0x14573, 0x052d0, 0x0a9a8, 0x0e950, 0x06aa0,
-        0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950, 0x05b57, 0x056a0,
-        0x096d0, 0x04dd5, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540, 0x0b5a0, 0x195a6,
-        0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46, 0x0ab60, 0x09570,
-        0x04af5, 0x04970, 0x064b0, 0x074a3, 0x0ea50, 0x06b58, 0x055c0, 0x0ab60, 0x096d5, 0x092e0,
-        0x0c960, 0x0d954, 0x0d4a0, 0x0da50, 0x07552, 0x056a0, 0x0abb7, 0x025d0, 0x092d0, 0x0cab5,
-        0x0a950, 0x0b4a0, 0x0baa4, 0x0ad50, 0x055d9, 0x04ba0, 0x0a5b0, 0x15176, 0x052b0, 0x0a930,
-        0x07954, 0x06aa0, 0x0ad50, 0x05b52, 0x04b60, 0x0a6e6, 0x0a4e0, 0x0d260, 0x0ea65, 0x0d530,
-        0x05aa0, 0x076a3, 0x096d0, 0x04bd7, 0x04ad0, 0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45,
-        0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0
-    ];
-
-    const HEAVENLY_STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
-    const EARTHLY_BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
-
-    const PALACE_NAMES = [
-        "命宮", "兄弟", "夫妻", "子女", "財帛", "疾厄",
-        "遷移", "交友", "官祿", "田宅", "福德", "父母"
-    ];
-
-    /**
-     * Na Yin Bureau mapping for 60 Jia Zi cycle
-     * Values: 2=Water, 3=Wood, 4=Gold, 5=Earth, 6=Fire
-     */
-    const NA_YIN_BUREAU = [
-        4, 4, 6, 6, 3, 3, 4, 4, 2, 2,
-        6, 6, 2, 2, 5, 5, 6, 6, 3, 3,
-        4, 4, 5, 5, 2, 2, 3, 3, 4, 4,
-        2, 2, 6, 6, 5, 5, 2, 2, 3, 3,
-        3, 3, 5, 5, 6, 6, 3, 3, 2, 2,
-        5, 5, 4, 4, 3, 3, 5, 5, 6, 6
-    ];
-
-    /**
-     * Zi Wei Star Group (Purple Star Group)
-     * Placed counter-clockwise from Zi Wei position
-     */
-    const ZI_WEI_STARS = [
-        { id: "ZiWei", name: "紫微", color: "#bc8cff", offset: 0, type: "major" },
-        { id: "TianJi", name: "天機", color: "#69ff8c", offset: -1, type: "major" },
-        { id: "TaiYang", name: "太陽", color: "#ff5f5f", offset: -3, type: "major" },
-        { id: "WuQu", name: "武曲", color: "#e1e1e1", offset: -4, type: "major" },
-        { id: "TianTong", name: "天同", color: "#ffff70", offset: -5, type: "major" },
-        { id: "LianZhen", name: "廉貞", color: "#ff5f5f", offset: -8, type: "major" }
-    ];
-
-    /**
-     * Tian Fu Star Group (Heavenly Cluster)
-     * Placed clockwise from Tian Fu position
-     */
-    const TIAN_FU_STARS = [
-        { id: "TianFu", name: "天府", color: "#e6c27a", offset: 0, type: "major" },
-        { id: "TaiYin", name: "太陰", color: "#5fafff", offset: 1, type: "major" },
-        { id: "TanLang", name: "貪狼", color: "#69ff8c", offset: 2, type: "major" },
-        { id: "JuMen", name: "巨門", color: "#e1e1e1", offset: 3, type: "major" },
-        { id: "TianXiang", name: "天相", color: "#e6c27a", offset: 4, type: "major" },
-        { id: "TianLiang", name: "天梁", color: "#69ff8c", offset: 5, type: "major" },
-        { id: "QiSha", name: "七殺", color: "#ff5f5f", offset: 6, type: "major" },
-        { id: "PoJun", name: "破軍", color: "#5fafff", offset: 10, type: "major" }
-    ];
+    // Data is now loaded from ZIWEI_DATA (js/ziwei/ziwei-data.js)
+    const LUNAR_INFO = ZIWEI_DATA.LUNAR_INFO;
+    const HEAVENLY_STEMS = ZIWEI_DATA.MAPS.HEAVENLY_STEMS;
+    const EARTHLY_BRANCHES = ZIWEI_DATA.MAPS.EARTHLY_BRANCHES;
+    const PALACE_NAMES = ZIWEI_DATA.MAPS.PALACE_NAMES;
+    const NA_YIN_BUREAU = ZIWEI_DATA.MAPS.NA_YIN_BUREAU;
+    const ZI_WEI_STARS = ZIWEI_DATA.STARS.MAJOR_ZI_WEI;
+    const TIAN_FU_STARS = ZIWEI_DATA.STARS.MAJOR_TIAN_FU;
 
     const LUNAR_BASE_DATE = new Date(1900, 0, 31);
     const MS_PER_DAY = 86400000;
