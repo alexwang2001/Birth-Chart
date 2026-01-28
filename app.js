@@ -311,6 +311,102 @@ function showZiWeiInterpretation(palace) {
     modal.style.display = 'flex';
 }
 
+function showHDInterpretation(category, value) {
+    const modal = document.getElementById('modal-overlay');
+    const icon = document.getElementById('modal-icon');
+    const title = document.getElementById('modal-title');
+    const subtitle = document.getElementById('modal-subtitle');
+    const container = document.querySelector('.interpretation-text');
+
+    icon.textContent = '🧬';
+    icon.style.color = '#ff69b4';
+    title.style.color = '#ff69b4';
+
+    let content = '';
+
+    if (category === 'type') {
+        const data = HD_INTERPRETATIONS.types[value];
+        title.textContent = value;
+        subtitle.textContent = '人類圖類型 (Type)';
+        if (data) {
+            content = `
+                <div class="interpretation-section">
+                    <h3 style="color:#ff69b4;">策略：${data.strategy}</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.6;">${data.description}</p>
+                </div>
+                <div class="interpretation-section">
+                    <h3>人生主題 (Theme)</h3>
+                    <p>${data.theme}</p>
+                </div>
+            `;
+        }
+    } else if (category === 'authority') {
+        const desc = HD_INTERPRETATIONS.authorities[value];
+        title.textContent = value;
+        subtitle.textContent = '內在權威 (Inner Authority)';
+        content = `
+            <div class="interpretation-section">
+                <h3>決策依據</h3>
+                <p style="font-size: 1.1rem; line-height: 1.6;">${desc || "這是引導您做出正確決定的內在導航系統。"}</p>
+            </div>
+            <div class="interpretation-section">
+                <p>請記得，內在權威永遠優先於大腦的邏輯分析。遵循您的權威能引領您走向最符合天賦的人生道路。</p>
+            </div>
+        `;
+    } else if (category === 'profile') {
+        // Find if value starts with the key
+        const key = Object.keys(HD_INTERPRETATIONS.profiles).find(k => value.startsWith(k));
+        const desc = HD_INTERPRETATIONS.profiles[key];
+        title.textContent = value;
+        subtitle.textContent = '人生角色 (Profile)';
+        content = `
+            <div class="interpretation-section">
+                <h3>角色意涵</h3>
+                <p style="font-size: 1.1rem; line-height: 1.6;">${desc || "人生角色決定了您如何與世界互動，以及您在社會中扮演的核心角色。"}</p>
+            </div>
+            <div class="interpretation-section">
+                <p>人生角色結合了您的意識（第一數字）與潛意識（第二數字）的特質。</p>
+            </div>
+        `;
+    } else if (category === 'center') {
+        const data = HD_INTERPRETATIONS.centers[value];
+        title.textContent = data ? data.name : value;
+        subtitle.textContent = '能量中心 (Center)';
+        if (data) {
+            content = `
+                <div class="interpretation-section">
+                    <h3 style="color:#ff69b4;">核心功能：${data.function}</h3>
+                </div>
+                <div class="interpretation-section">
+                    <h3 style="color: #69ff8c;">如果您是「有定義 (填色)」：</h3>
+                    <p style="font-size: 1rem; color: var(--text-light);">${data.defined}</p>
+                </div>
+                <div class="interpretation-section">
+                    <h3 style="color: #888;">如果您是「無定義 (空白)」：</h3>
+                    <p style="font-size: 1rem; color: var(--text-dim);">${data.undefined}</p>
+                </div>
+            `;
+        }
+    } else if (category === 'channel') {
+        const desc = HD_INTERPRETATIONS.channels[value];
+        title.textContent = '通道 ' + value;
+        subtitle.textContent = '人類圖通道 (Channel)';
+        content = `
+            <div class="interpretation-section">
+                <h3>通道特質</h3>
+                <p style="font-size: 1.1rem; line-height: 1.6;">${desc || "這條通道代表了您生命中特定且穩定的能量流動方式。"}</p>
+            </div>
+            <div class="interpretation-section">
+                <p>通道連接著兩個能量中心，當一條通道被定義時，這兩個中心也會同時被定義（填色），展現出特定的天賦才華。</p>
+            </div>
+        `;
+    }
+
+    if (container) container.innerHTML = content;
+    modal.style.display = 'flex';
+}
+
+
 
 function syncTransitToNow() {
     const now = new Date();
@@ -793,15 +889,15 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
             // 1. Summary Cards
             const summaryDiv = document.getElementById('hd-summary');
             summaryDiv.innerHTML = `
-                <div class="hd-card">
+                <div class="hd-card" style="cursor:pointer;" onclick="showHDInterpretation('type', '${hdData.type}')">
                     <div class="hd-card-label">類型 (Type)</div>
                     <div class="hd-card-value" style="font-size:1.1rem;">${hdData.type}</div>
                 </div>
-                 <div class="hd-card">
+                 <div class="hd-card" style="cursor:pointer;" onclick="showHDInterpretation('profile', '${hdData.profile}')">
                     <div class="hd-card-label">人生角色 (Profile)</div>
                     <div class="hd-card-value">${hdData.profile}</div>
                 </div>
-                 <div class="hd-card">
+                 <div class="hd-card" style="cursor:pointer;" onclick="showHDInterpretation('authority', '${hdData.authority}')">
                     <div class="hd-card-label">內在權威 (Authority)</div>
                     <div class="hd-card-value" style="font-size:1.1rem;">${hdData.authority}</div>
                 </div>
@@ -852,6 +948,8 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
 
                     const item = document.createElement('div');
                     item.className = 'hd-channel-item';
+                    item.style.cursor = 'pointer';
+                    item.onclick = () => showHDInterpretation('channel', key);
                     item.innerHTML = `
                         <span class="hd-channel-id">${ch[0]}-${ch[1]}</span>
                         <span>${name}</span>
@@ -1212,8 +1310,10 @@ function renderHumanDesignSVG(hdData) {
 
         const label = CENTER_NAMES_ZH[c.id] || c.id;
 
-        return `<path d="${path}" class="${cls}" style="${isActive ? 'fill:' + c.color : ''}" />
-                <text x="${cx}" y="${cy}" dy="4" class="hd-center-label" style="${isActive ? 'fill:#000; font-weight:bold;' : ''}">${label}</text>`;
+        return `<g style="cursor:pointer;" onclick="showHDInterpretation('center', '${c.id}')">
+                    <path d="${path}" class="${cls}" style="${isActive ? 'fill:' + c.color : ''}" />
+                    <text x="${cx}" y="${cy}" dy="4" class="hd-center-label" style="${isActive ? 'fill:#000; font-weight:bold;' : ''}">${label}</text>
+                </g>`;
     };
 
     // Build SVG
