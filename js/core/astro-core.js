@@ -1,8 +1,4 @@
-function normalize(angle) {
-    angle = angle % 360;
-    if (angle < 0) angle += 360;
-    return angle;
-}
+
 
 // Planetary orbital elements (approximate for J2000)
 const ELEMENTS = {
@@ -176,11 +172,7 @@ function getHighPrecisionLongitude(planetId, jd) {
     return normalize(lon);
 }
 
-function getJulianDate(date, time) {
-    const d_obj = new Date(date + 'T' + time + ':00+08:00');
-    const jd = (d_obj.getTime() / 86400000.0) + 2440587.5;
-    return jd;
-}
+
 
 function getSiderealTime(jd, lon) {
     const T = (jd - 2451545.0) / 36525.0;
@@ -263,19 +255,7 @@ function calculateHouses(lst, lat, eps = 23.439, system = 'placidus') {
     return { asc, mc, cusps };
 }
 
-function getHouseIndex(longitude, cusps) {
-    for (let i = 0; i < 12; i++) {
-        const c1 = cusps[i];
-        const c2 = cusps[(i + 1) % 12];
-        if (c2 > c1) {
-            if (longitude >= c1 && longitude < c2) return i;
-        } else {
-            // Span across 0 degree Aries
-            if (longitude >= c1 || longitude < c2) return i;
-        }
-    }
-    return 0; // Fallback
-}
+
 
 function calculateTransits(transitDate, transitTime) {
     const jd = getJulianDate(transitDate, transitTime);
