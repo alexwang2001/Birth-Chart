@@ -68,7 +68,7 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
         const { birthDate, birthTime, birthHour, location, houseSystem, transitDate, transitTime, gender, queryYear } = inputs;
 
         // 2. Perform Astrology Calculations
-        const jd = getJulianDate(birthDate, birthTime);
+        const jd = getJulianDate(birthDate, birthTime, 8);
         const lst = getSiderealTime(jd, location.lon);
 
         const planets = PLANETS.map(p => ({
@@ -102,7 +102,7 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
         const hdData = HumanDesign.calculate(jd);
         let hdTransitData = null;
         if (transitDate) {
-            const tJd = getJulianDate(transitDate, transitTime);
+            const tJd = getJulianDate(transitDate, transitTime, 8);
             hdTransitData = HumanDesign.calculate(tJd);
         }
         AppState.setHDResults(hdData, hdData.design, hdTransitData);

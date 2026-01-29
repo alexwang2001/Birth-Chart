@@ -34,7 +34,7 @@ const lon = 121.51;
 
 console.log(`Testing Astrological Points for: ${date} ${time} at Lat ${lat}, Lon ${lon}\n`);
 
-const jd = sandbox.getJulianDate(date, time);
+const jd = sandbox.getJulianDate(date, time, 8);
 console.log(`Julian Date: ${jd}`);
 
 const chiron = sandbox.getHighPrecisionLongitude('Chiron', jd);

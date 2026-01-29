@@ -23,8 +23,9 @@ function addPrecession(lon, jd) {
     return normalize(lon + p);
 }
 
-// Convert Date to Julian Date (UTC)
-function getJulianDate(dateStr, timeStr) {
+// Convert Date to Julian Date (UTC or Local with Offset)
+// tzOffset: Hours to subtract from timeStr to get UTC (e.g. Taiwan is +8, so pass 8)
+function getJulianDate(dateStr, timeStr, tzOffset = 0) {
     if (!dateStr || !timeStr) return 0;
 
     const [y, m, d] = dateStr.split('-').map(Number);
@@ -40,7 +41,8 @@ function getJulianDate(dateStr, timeStr) {
     const A = Math.floor(year / 100);
     const B = 2 - A + Math.floor(A / 4);
 
-    const dayDec = d + (hr + min / 60.0) / 24.0;
+    // Adjust for timezone: subtract offset from hours
+    const dayDec = d + (hr - tzOffset + min / 60.0) / 24.0;
 
     const jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + dayDec + B - 1524.5;
     return jd;
